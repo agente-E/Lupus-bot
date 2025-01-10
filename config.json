@@ -1,0 +1,22 @@
+{
+  "roles": {
+    "deepwoken_updates": 1295766809726812221,
+    "twitch_notify": 1301495718619381771
+  },
+  "channels": {
+    "deepwoken_updates": 1295766971937325097,
+    "welcome": 1229485558313652264,
+    "twitch_notify": 1301496350122311743,
+    "suggestions": 1325509411879260170,
+    "suggest": 1325512019742294080
+  },
+  "gacha_settings": {
+    "pity_threshold": 60,
+    "price_per_roll": 60,
+    "gacha_cooldown": 600
+  },
+  "twitch_settings": {
+    "twitch_username": "agente__E",
+    "direct_url": "https://www.twitch.tv/agente__E"
+  }
+}
