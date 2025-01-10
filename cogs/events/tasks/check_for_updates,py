@@ -1,0 +1,19 @@
+@tasks.loop(seconds=1)
+async def check_for_updates():
+    global last_message, update_complete
+    current_time = discord.utils.utcnow()
+    if last_message and (current_time - last_message).total_seconds() >= 60:
+        try:
+            channel_update = await bot.fetch_channel(CHANNEL_DWU)
+            dwupdates = f"<@&{ROLE_DWU}>"
+            await channel_update.send(f"¡Nueva actualización de Deepwoken {dwupdates}!")
+            update_complete = True
+            last_message = None
+            check_for_updates.stop()  # Stop the loop after completing the update
+            print("Teoricamente funciona")
+        except discord.NotFound:
+            print("No se encontró el canal")
+        except discord.Forbidden:
+            print("El bot no tiene permisos para acceder al canal")
+        except Exception as e:
+            print(f"Error inesperado al enviar el mensaje: {e}")
