@@ -66,8 +66,14 @@ async def refresh(interaction: discord.Interaction):
         print(", ".join(command.name for command in commands)) # Separated with comma
     except Exception as e:
         print(f'Error al sincronizar los comandos de aplicación: {e}')
+    try:
+        # Loads the config.json
+        bot.config = await config_load()
+        print("Configuración cargada correctamente.")
+    except Exception as e:
+        print(f"Error al cargar la configuración: {e}")
     bot.dispatch("extensions_ready")
-    await interaction.followup.send(f"Se han recargado los cogs: {len(synced)}", ephemeral=True)
+    await interaction.followup.send(f"Se han recargado los cogs: {len(synced)} y configuración cargada correctamente.", ephemeral=True)
 
 # Bot execution
 @bot.event
