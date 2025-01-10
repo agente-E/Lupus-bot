@@ -1,3 +1,4 @@
+import asyncio
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -19,16 +20,53 @@ intents.dm_messages = True # Permission to send messages though DM
 intents.voice_states = True # Permission to receive voice state changes
 bot = commands.Bot(command_prefix = "dw/", intents=intents) # Definition of the bot variable with prefix dw/
 
+async def load_cogs(bot):
+    cogs_names = []
+    # Looks all files through cogs
+    for root, dirs, files in os.walk("cogs"):
+        for file in files:
+            if file.endswith(".py") and file != "__init__.py":
+                # Get the name of the directory
+                cog_name = os.path.splitext(os.path.relpath(os.path.join(root, file)))[0]
+                cog_name = cog_name.replace(os.sep, ".")  # Convierte las barras a puntos
+                cogs_names.append(cog_name)
+
+    # Carga todas las extensiones encontradas
+    for cog in cogs_names:
+        try:
+            print(f"Cargando el cog: {cog}")  # Imprime el nombre del cog antes de cargarlo
+            await bot.load_extension(cog)
+            print(f"Cog '{cog}' cargado con éxito.")
+        except Exception as e:
+            print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
+
+asyncio.run(load_cogs(bot))
+
+@bot.tree.command(name="refresh", description="Recarga los cogs del bot admin")
+@app_commands.default_permissions(administrator=True)
+async def refresh(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    bot.dispatch("extensions_stop")
+    await load_cogs(bot)
+    try:
+        synced = await bot.tree.sync()
+        print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
+        commands = await bot.tree.fetch_commands() # Show syncronized commands  
+        print(", ".join(command.name for command in commands)) # Separated with comma
+    except Exception as e:
+        print(f'Error al sincronizar los comandos de aplicación: {e}')
+    bot.dispatch("extensions_ready")
+    await interaction.followup.send(f"Se han recargado los cogs: {len(synced)}", ephemeral=True)
+
 # Bot execution
 @bot.event
 async def on_ready(): # Start event
-    
     # Get all the slash commands
     try:
         synced = await bot.tree.sync()
-        print(f'Se han sincronizado {len(synced)} comandos de la aplicación (slash commands).')
+        print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
         commands = await bot.tree.fetch_commands() # Show syncronized commands  
-        print(", ".join(command.name for command in commands))
+        print(", ".join(command.name for command in commands)) # Separated with comma
     except Exception as e:
         print(f'Error al sincronizar los comandos de aplicación: {e}')
     
@@ -52,4 +90,5 @@ async def on_ready(): # Start event
     await bot.change_presence(activity=discord.Activity(name="Deepwoken", type=0))
     print(f'Bot {bot.user.name} está listo y conectado a Discord!')
 
+# Run the bot
 bot.run(TOKEN)
