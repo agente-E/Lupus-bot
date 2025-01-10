@@ -15,7 +15,6 @@ from recompensas import tabla_recompensas, PITY_REWARDS
 from discord import app_commands, ui, ButtonStyle
 from datetime import datetime, timedelta
 from discord.ui import Button, View, Select
-from secret import TOKEN, CLIENT_ID, CLIENT_SECRET, ACCESS_TOKEN 
 from ID import ROLE_DWU, CHANNEL_DWU, CHANNEL_WELCOME, CHANNEL_TWITCH, ROLE_TWITCH, CHANNEL_SUGGESTIONS, CHANNEL_SUGGEST # Importa los IDs necesarios
 from PIL import Image, ImageDraw, ImageFont  # Importa Pillow
 
@@ -26,16 +25,6 @@ is_live = False
 token_dacces = None
 token_expiry = 0
 update_complete = False  # Definición de variable
-TWITCH_USERNAME = 'agente__E'  # Definición de variable
-DIRECT_URL = 'https://www.twitch.tv/agente__E'
 user_last_message_time = {}
 active_tasks = {}
 user_times = {}
-PITY_THRESHOLD = 59
-PRICE_PER_ROLL = 60
-GACHA_COOLDOWN = 600
-
-
-
-# Ejecuta el bot
-bot.run(TOKEN)
