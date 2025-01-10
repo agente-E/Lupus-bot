@@ -1,4 +1,6 @@
 import asyncio
+import json
+import aiofiles
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -40,6 +42,15 @@ async def load_cogs(bot):
         except Exception as e:
             print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
 
+# Loads the config.json
+async def config_load():
+    # Open the filewith async
+    async with aiofiles.open("config.json", mode="r") as f:
+        # Load the content of the file as a dictionary
+        config_content = await f.read()
+        config = json.loads(config_content)
+    return config
+
 asyncio.run(load_cogs(bot))
 
 @bot.tree.command(name="refresh", description="Recarga los cogs del bot admin")
@@ -61,6 +72,13 @@ async def refresh(interaction: discord.Interaction):
 # Bot execution
 @bot.event
 async def on_ready(): # Start event
+    try:
+        # Loads the config.json
+        bot.config = await config_load()
+        print("Configuración cargada correctamente.")
+    except Exception as e:
+        print(f"Error al cargar la configuración: {e}")
+
     # Get all the slash commands
     try:
         synced = await bot.tree.sync()
