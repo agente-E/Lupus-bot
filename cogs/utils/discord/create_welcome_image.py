@@ -68,7 +68,7 @@ class CreateWelcomeImage(commands.Cog):
             except Exception as e:
                 raise RuntimeError(f"Error al guardar la imagen en buffer: {e}")
             try:
-                with open('welcome_debug.png', 'wb') as f:
+                with open('assets/images/welcome_debug.png', 'wb') as f:
                     f.write(image_bytes.getbuffer())
             except Exception as e:
                 raise RuntimeError(f"Error al guardar la imagen de depuración: {e}")
