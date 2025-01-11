@@ -4,7 +4,7 @@ import time
 import random
 from discord.ext import commands
 
-class OnMessage (commands.Cog):
+class onMessage (commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

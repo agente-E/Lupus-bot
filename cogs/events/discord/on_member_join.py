@@ -1,11 +1,12 @@
 import discord
 from cogs.utils.discord.create_welcome_image import CreateWelcomeImage
-from cogs.utils.gacha.get_user_data import get_user_data
+from cogs.utils.gacha.get_user_data import getUserData
 from discord.ext import commands
 
 class onMemberJoin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.get_user_data_cog = getUserData(bot)  # Instantiate the cog here
 
     # When a user joins the server
     @commands.Cog.listener()
@@ -66,7 +67,7 @@ class onMemberJoin(commands.Cog):
         except discord.Forbidden:
             print(f"No se pudieron enviar los DMs a {member.name}. El usuario tiene bloqueados los DMs.")
         try:
-            # Assing the User role to the user
+            # Assign the User role to the user
             rol_name = "Usuario"
             announcement_role = "Anuncios"
             guild = member.guild
@@ -81,33 +82,44 @@ class onMemberJoin(commands.Cog):
                 print(f"Rol {rol_name} no encontrado en el servidor.")
             if role2:
                 await member.add_roles(role2)
-                print(f"Rol {rol_name} asignado a {member.name}")
+                print(f"Rol {announcement_role} asignado a {member.name}")
             else:
-                print(f"Rol {rol_name} no encontrado en el servidor.")
+                print(f"Rol {announcement_role} no encontrado en el servidor.")
+            
             # Get welcome channel
             channel = self.bot.get_channel(self.bot.config["channels"].get("welcome"))
             if channel is None:
                 raise ValueError("Canal de bienvenida no encontrado")
             # Create welcome image
-            welcome_image = await CreateWelcomeImage.create_welcome_image(self, member)
-            await channel.send(file=discord.File(welcome_image, filename='welcome.png'))
+            try:
+                welcome_image = await CreateWelcomeImage.create_welcome_image(self, member)
+                await channel.send(file=discord.File(welcome_image, filename='welcome.png'))
+            except:
+                print("NU huh")
+            # Now, get user data and assign roles if available
+            user_id = str(member.id)
+            user_data = self.get_user_data_cog.get_user_data(user_id)
+
+            # Check if the user has roles defined in their data
+            if isinstance(user_data, dict):
+                obtained_roles = user_data.get('Roles', "").split(", ")
+            else:
+                print(f"Error: {user_data}")  # This will give details of the error, if any
+                obtained_roles = []  # Initialize obtained_roles to avoid UnboundLocalError
+
+            if obtained_roles:
+                roles = []
+                for role_name in obtained_roles:
+                    # Search the roles in the server
+                    role = discord.utils.get(member.guild.roles, name=role_name)
+                    if role:
+                        roles.append(role)
+                if roles:
+                    await member.add_roles(*roles)
+                    print(f"Se asignaron los roles a {member.name}: {', '.join(role.name for role in roles)}")
+
         except Exception as e:
             print(f"Error en on_member_join: {e}")
-        user_id = str(member.id)
-        user_data = get_user_data(user_id)
-        # Check if the user got before roles
-        obtained_roles = user_data.get('obtained_roles', [])
-        # For every role that the user has, assign them
-        if obtained_roles:
-            roles = []
-            for role_name in obtained_roles:
-                # Search the roles in the server
-                role = discord.utils.get(member.guild.roles, name=role_name)
-                if role:
-                    roles.append(role)
-            if roles:
-                await member.add_roles(*roles)
-                print(f"Se asignaron los roles a {member.name}: {', '.join(role.name for role in roles)}")
 
 async def setup(bot):   
     await bot.add_cog(onMemberJoin(bot))

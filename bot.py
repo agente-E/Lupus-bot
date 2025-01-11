@@ -36,7 +36,6 @@ async def load_cogs(bot):
     # Carga todas las extensiones encontradas
     for cog in cogs_names:
         try:
-            print(f"Cargando el cog: {cog}")  # Imprime el nombre del cog antes de cargarlo
             await bot.load_extension(cog)
             print(f"Cog '{cog}' cargado con éxito.")
         except Exception as e:
