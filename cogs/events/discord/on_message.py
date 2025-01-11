@@ -1,12 +1,18 @@
 import discord
-import re
+import requests
 import time
 import random
+import pocketbase
 from discord.ext import commands
+from cogs.utils.gacha.get_user_data import getUserData
+from cogs.utils.gacha.save_user_data import saveUserData
 
 class onMessage (commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.get_user_data_cog = getUserData(bot)  # Instantiate the cog here
+        self.save_data_cog = saveUserData(bot)
+        self.pb_url = 'http://localhost:8090'  # URL de tu servidor PocketBase
 
     # When a message is sent
         @commands.Cog.listener()
@@ -33,27 +39,27 @@ class onMessage (commands.Cog):
             # todo
             current_time = time.time()
             user_id = str(message.author.id)
-            if user_id not in user_last_message_time:
-                user_last_message_time[user_id] = 0  
-            if user_id in user_last_message_time:
-                last_message_time = user_last_message_time[user_id]
-                if current_time - last_message_time >= 60:
-                    user_last_message_time[user_id] = current_time
-                    user_data = get_user_data(user_id)
-                    booster_role_name = "Server Booster"
-                    if any(role.name == booster_role_name for role in message.author.roles):
-                        user_data['echoes'] += random.randint(15, 25)
-                        user_data['experiencia'] += random.randint(15, 25)
-                        user_data = await check_and_level_up(user_data, message=message)
-                        save_user_data(user_id, user_data)
-                    else:
-                        user_data['echoes'] += random.randint(1, 5)
-                        user_data['experiencia'] += random.randint(1, 5)
-                        user_data = await check_and_level_up(user_data, message=message)
-                        save_user_data(user_id, user_data)  
+            user_data = self.get_user_data_cog.get_user_data(user_id)
+            echoes = user_data.get('echoes', 0)
+            experiencie = user_data.get('experiencie', 0)
+            last_message = user_data.get('last_message', 0)
+            if current_time - last_message >= 60:
+                last_message = current_time
+                print(last_message)
+                booster_role_name = "Server Booster"
+                if any(role.name == booster_role_name for role in message.author.roles):
+                    echoes += random.randint(15, 25)
+                    experiencie += random.randint(15, 25)
+                else:
+                    echoes += random.randint(1, 5)
+                    experiencie += random.randint(1, 5)
+                user_data['echoes'] = echoes
+                user_data['experiencie'] = experiencie
+                user_data['last_message'] = last_message
+                await self.save_data_cog.save_user_data(self, user_id, user_data)
             # todo       
-            if not check_for_updates.is_running():
-                check_for_updates.start()
+            # if not check_for_updates.is_running():
+            #     check_for_updates.start()
             allowed_channel = self.bot.get_channel(self.bot.config["channels"].get("deepwoken_updates"))
             suggest_channel = self.bot.get_channel(self.bot.config["channels"].get("suggest"))
             suggestions_channel = self.bot.get_channel(self.bot.config["channels"].get("suggestions"))
@@ -130,4 +136,4 @@ class onMessage (commands.Cog):
             await bot.process_commands(message)
 
 async def setup(bot):
-    await bot.add_cog(OnMessage(bot))
+    await bot.add_cog(onMessage(bot))

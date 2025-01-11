@@ -96,6 +96,7 @@ class onMemberJoin(commands.Cog):
                 await channel.send(file=discord.File(welcome_image, filename='welcome.png'))
             except:
                 print("Error creating welcome image")
+            
             # Now, get user data and assign roles if available
             user_id = str(member.id)
             user_data = self.get_user_data_cog.get_user_data(user_id)
