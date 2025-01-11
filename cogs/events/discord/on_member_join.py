@@ -95,18 +95,14 @@ class onMemberJoin(commands.Cog):
                 welcome_image = await CreateWelcomeImage.create_welcome_image(self, member)
                 await channel.send(file=discord.File(welcome_image, filename='welcome.png'))
             except:
-                print("NU huh")
+                print("Error creating welcome image")
             # Now, get user data and assign roles if available
             user_id = str(member.id)
             user_data = self.get_user_data_cog.get_user_data(user_id)
 
             # Check if the user has roles defined in their data
-            if isinstance(user_data, dict):
-                obtained_roles = user_data.get('Roles', "").split(", ")
-            else:
-                print(f"Error: {user_data}")  # This will give details of the error, if any
-                obtained_roles = []  # Initialize obtained_roles to avoid UnboundLocalError
-
+            obtained_roles = user_data.get('Roles', "").split(", ")
+            print(obtained_roles)
             if obtained_roles:
                 roles = []
                 for role_name in obtained_roles:
