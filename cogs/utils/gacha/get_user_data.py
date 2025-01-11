@@ -26,16 +26,19 @@ class getUserData(commands.Cog):
                 else:
                     obtained_roles = []
 
-                # Extraer los roles
-                roles = []
-                for role in obtained_roles:
-                    role_id = role.get('role_id')
-                    role_url = f'{self.pb_url}/api/collections/ROLES/records/{role_id}'
-                    role_data_response = requests.get(role_url)
-                    if role_data_response.status_code == 200:
-                        role_data = role_data_response.json()
-                        roles.append(role_data.get('name', 'Unknown'))
-
+                try:
+                    # Extract roles from obtained_roles
+                    roles = []
+                    for role in obtained_roles:
+                        # If role_id is a list (e.g., [39265987, 22135613]), we need to iterate over it
+                        for role_id in role.get('role_id', []):
+                            role_url = f'{self.pb_url}/api/collections/ROLES/records/{role_id}'
+                            role_data_response = requests.get(role_url)
+                            if role_data_response.status_code == 200:
+                                role_data = role_data_response.json()
+                                roles.append(role_data.get('name', 'Unknown'))
+                except:
+                    print("No elegible roles")
                 # Estructura de los datos del usuario
                 user_info = {
                     "ID": user_data["id"],
@@ -49,6 +52,7 @@ class getUserData(commands.Cog):
                     "Created": user_data["created"],
                     "Updated": user_data["updated"]
                 }
+                print(user_info)
                 return user_info
             else:
                 print(f"User with ID {user_id} not found in the database. Creating profile")
