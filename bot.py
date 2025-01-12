@@ -32,9 +32,15 @@ async def load_cogs(bot):
                 cog_name = os.path.splitext(os.path.relpath(os.path.join(root, file)))[0]
                 cog_name = cog_name.replace(os.sep, ".")  # Convierte las barras a puntos
                 cogs_names.append(cog_name)
-
     # Carga todas las extensiones encontradas
     for cog in cogs_names:
+        if cog in bot.extensions:
+            print(f"Cog '{cog}' is already loaded. Unloading and reloading.")
+            try:
+                await bot.unload_extension(cog)  # Unload the cog
+                print(f"Cog '{cog}' unloaded successfully.")
+            except Exception as e:
+                print(f"Failed to unload cog '{cog}'. Error: {e}")
         try:
             await bot.load_extension(cog)
             print(f"Cog '{cog}' cargado con éxito.")
@@ -51,12 +57,12 @@ async def config_load():
         config = json.loads(config_content)
     return config
 
-asyncio.run(load_cogs(bot))
 
 @bot.tree.command(name="refresh", description="Recarga los cogs del bot admin")
 @app_commands.default_permissions(administrator=True)
 async def refresh(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True, thinking=True)
+    await load_cogs(bot)
     try:
         synced = await bot.tree.sync()
         print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
@@ -72,6 +78,8 @@ async def refresh(interaction: discord.Interaction):
         print(f"Error al cargar la configuración: {e}")
     await interaction.followup.send(f"Se han recargado {len(synced)} comandos y configuración cargada correctamente.", ephemeral=True)
 
+asyncio.run(load_cogs(bot))
+
 # Bot execution
 @bot.event
 async def on_ready(): # Start event
@@ -81,7 +89,6 @@ async def on_ready(): # Start event
         print("Configuración cargada correctamente.")
     except Exception as e:
         print(f"Error al cargar la configuración: {e}")
-
     # Get all the slash commands
     try:
         synced = await bot.tree.sync()
@@ -95,7 +102,6 @@ async def on_ready(): # Start event
     # check_live_status.start()
     # if not check_for_updates.is_running():
     #     check_for_updates.start()
-
     # Looks all channels on the discord servers
     for guild in bot.guilds:
         print(f"En el servidor: {guild.name}")
