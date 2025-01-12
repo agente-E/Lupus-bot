@@ -37,8 +37,8 @@ class getUserData(commands.Cog):
                     "Level": user_data["level"],
                     "Pity Counter": user_data.get("pity_counter", "No Data"),
                     "Last Gacha": user_data.get("last_gacha", "No Data"),
-                    "Roles": ", ".join(roles) if roles else "No roles obtained",
                     "Last message": user_data.get("last_message", "No data"),
+                    "Roles": ", ".join(roles) if roles else "No roles obtained",
                     "Created": user_data["created"],
                     "Updated": user_data["updated"]
                 }

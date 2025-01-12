@@ -5,10 +5,9 @@ from cogs.utils.gacha.get_user_data import getUserData
 from cogs.utils.gacha.save_user_data import saveUserData
 from cogs.utils.gacha.get_color import getColor
 
-class getUserData(commands.Cog):
+class roll(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.pb_url = 'http://localhost:8090'
         self.get_user_data_cog = getUserData(bot)
         self.save_data_cog = saveUserData(bot)
         self.get_color_cog = getColor(bot)
