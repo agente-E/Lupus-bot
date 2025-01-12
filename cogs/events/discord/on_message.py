@@ -47,7 +47,6 @@ class OnMessage (commands.Cog):
         # Checks if a minute has been passed
         if last_message is None or last_message == 0 or current_time - last_message >= 60:
             booster_role_name = "Server Booster"
-            last_message = current_time
             echoes_to_sum = 0
             experience_to_sum = 0
             
@@ -64,7 +63,7 @@ class OnMessage (commands.Cog):
             experience += experience_to_sum
             user_data['echoes'] = echoes
             user_data['experience'] = experience
-            user_data['last_message'] = last_message
+            user_data['last_message'] = current_time
             self.save_data_cog.save_user_data(user_id, user_data)
         # todo       
         # if not check_for_updates.is_running():
