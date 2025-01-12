@@ -33,7 +33,7 @@ class getUserData(commands.Cog):
                 user_info = {
                     "ID": user_data["id"],
                     "Echoes": user_data.get("echoes", "No Data"),
-                    "Experience": user_data.get("experiencie", "No Data"),
+                    "Experience": user_data.get("experience", "No Data"),
                     "Level": user_data["level"],
                     "Pity Counter": user_data.get("pity_counter", "No Data"),
                     "Last Gacha": user_data.get("last_gacha", "No Data"),
@@ -55,7 +55,7 @@ class getUserData(commands.Cog):
         new_user_data = {
             "id": user_id,
             "echoes": 0,
-            "experiencie": 0,
+            "experience": 0,
             "level": 1,
             "pity_counter": 0,
             "last_gacha": None,
