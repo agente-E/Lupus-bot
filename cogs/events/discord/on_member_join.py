@@ -6,64 +6,70 @@ from discord.ext import commands
 class onMemberJoin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.get_user_data_cog = getUserData(bot)  # Instantiate the cog here
+        self.get_user_data_cog = getUserData(bot)
 
     # When a user joins the server
     @commands.Cog.listener()
     async def on_member_join(self, member):
         # Create welcome embed for MD
-        embed = discord.Embed(
+        embed1 = discord.Embed(
             title="¡Bienvenido al servidor!",
             description=f"¡Hola {member.mention}! Estamos encantados de que te hayas unido a nuestra comunidad. Aquí tienes una guía para empezar:",
             color=discord.Color.green()
             )
-        embed.add_field(
+        embed1.add_field(
             name="1️⃣ Reglas del servidor",
             value="Lee nuestras reglas para asegurarte de que todos creamos un buen lugar de convivencia. https://discord.com/channels/776247434384375818/777160475158511627",
             inline=False
         )
-        embed.add_field(
+        embed1.add_field(
             name="2️⃣ Presentación",
-            value="¡Nos encantaría conocerte! No dudes en hablar con la comunidad por sus canales correspondidos.",
+            value="¡Nos encantaría conocerte! No dudes en presentarte con la comunidad y encontrar a tu grupo de juego.",
             inline=False
         )
-        embed.add_field(
+        embed1.add_field(
             name="3️⃣ Comandos útiles",
             value="Usa el comando `/roll` para realizar tiradas y obtener recompensas, desde experiencia, permisos en el servidor y roles de decoración.",
             inline=False
         )
-        embed.add_field(
+        embed1.add_field(
             name="4️⃣ Preguntas",
-            value="Si tienes alguna pregunta, no dudes en preguntar en el canal de ayuda o contactar a alguno de los helpers.",
+            value="Si tienes alguna pregunta, no dudes en preguntar en el canal de ayuda o contactar con el soporte usando tickets.",
             inline=False
         )
-        embed.add_field(
+        embed1.add_field(
             name="5️⃣ Invitación",
             value=(
-                "Si quieres invitar a alguien al servidor, puedes copiarlo en el canal:\n"
+                "Si quieres invitar a alguien al servidor, tienes un enlace en el canal:\n"
                 "https://discord.com/channels/776247434384375818/860630677489319936"
             ),
             inline=False
         )
-        embed.add_field(
-        name="🔧 ¿Cómo funciona el servidor?",
-        value=(
-            "Cada canal tiene una función específica y estará disponible desde el momento en que entres al servidor. "
-            "El servidor cuenta con su propia mecánica para ciertas acciones, como enviar imágenes, usar sonidos en llamadas y realizar tiradas. "
-            "Para hacer una tirada, deberás usar el comando `/roll`. Puedes hacer una tirada gratis cada 10 minutos, "
-            "pero si necesitas más, puedes gastar *echoes* para realizar tiradas adicionales.\n\n"
-            
-            "*¿Cómo consigo echoes?*\n"
-            "Fácil: siendo activo en el servidor. "
-            "Obtendrás *echoes* de manera pasiva al enviar mensajes cada minuto y al pasar tiempo en llamadas de voz. "
-            "Además, ganarás experiencia, que por ahora no tiene otro uso más que mostrar tu nivel de actividad en la comunidad."
-        ),
-        inline=False
+        embed2 = discord.Embed(
+            title="¿🔧 Cómo funciona el servidor?",
+            color=discord.Color.green()
+            )
+        embed2.add_field(
+            name="Explicación:",
+            value=(
+                "En el mismo momento en el que te unes al **servidor**, tendrás acceso a los canales de texto y voz que presentamos, "
+                "cada uno con su tópico específico. Esta comunidad cuenta con una **mecánica propia** para obtener diversas acciones, "
+                "como el uso del **panel de sonidos** en las llamadas o **enviar imágenes** por los canales correspondientes.\n\n"
+                "El proceso para conseguir estos **beneficios** se realiza mediante un **GACHAPON**, creado específicamente para el servidor. "
+                "Para usarlo, deberás realizar el comando `/roll` en el canal "
+                "[correspondiente](https://discord.com/channels/776247434384375818/1312478372357603399) "
+                "y necesitarás **Echoes** para hacer la tirada, aunque cada usuario tiene una tirada **gratuita** cada 10 minutos.\n\n"
+                "¿Pero cómo consigo los Echoes?\n\n"
+                "Los **Echoes** son la moneda de cambio de esta comunidad, y su obtención es sencilla y gratuita: ¡Sé activo en la **Comunidad Hispana Deepwoken**! "
+                "Tu número de **Echoes** aumentará al **enviar mensajes** y al **participar en llamadas**.\n\n"
+            ),
+            inline=False
         )
         # Send message to the member DM
         try:
             dm_channel = await member.create_dm()
-            await dm_channel.send(embed=embed)
+            await dm_channel.send(embed=embed1)
+            await dm_channel.send(embed=embed2)
         except discord.Forbidden:
             print(f"No se pudieron enviar los DMs a {member.name}. El usuario tiene bloqueados los DMs.")
         try:
@@ -100,23 +106,24 @@ class onMemberJoin(commands.Cog):
             # Now, get user data and assign roles if available
             user_id = str(member.id)
             user_data = self.get_user_data_cog.get_user_data(user_id)
-
-            # Check if the user has roles defined in their data
-            obtained_roles = user_data.get('Roles', "").split(", ")
-            print(obtained_roles)
-            if obtained_roles:
-                roles = []
-                for role_name in obtained_roles:
-                    # Search the roles in the server
-                    role = discord.utils.get(member.guild.roles, name=role_name)
-                    if role:
-                        roles.append(role)
-                if roles:
-                    await member.add_roles(*roles)
-                    print(f"Se asignaron los roles a {member.name}: {', '.join(role.name for role in roles)}")
-
+            if user_data is not None:
+                # Check if the user has roles defined in their data
+                obtained_roles = user_data.get('Roles', "").split(", ")
+                print(obtained_roles)
+                if obtained_roles:
+                    roles = []
+                    for role_name in obtained_roles:
+                        # Search the roles in the server
+                        role = discord.utils.get(member.guild.roles, name=role_name)
+                        if role:
+                            roles.append(role)
+                    if roles:
+                        await member.add_roles(*roles)
+                        print(f"Se asignaron los roles a {member.name}: {', '.join(role.name for role in roles)}")
+                else:
+                    print("El usuario no tiene roles asignados")
         except Exception as e:
-            print(f"Error en on_member_join: {e}")
+            print(f"Error en on_member_join: {e} ayaha")
 
 async def setup(bot):   
     await bot.add_cog(onMemberJoin(bot))

@@ -39,7 +39,8 @@ async def load_cogs(bot):
             await bot.load_extension(cog)
             print(f"Cog '{cog}' cargado con éxito.")
         except Exception as e:
-            print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
+            print(f"{e}")
+            # print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
 
 # Loads the config.json
 async def config_load():
@@ -56,8 +57,6 @@ asyncio.run(load_cogs(bot))
 @app_commands.default_permissions(administrator=True)
 async def refresh(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True, thinking=True)
-    bot.dispatch("extensions_stop")
-    await load_cogs(bot)
     try:
         synced = await bot.tree.sync()
         print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
@@ -71,8 +70,7 @@ async def refresh(interaction: discord.Interaction):
         print("Configuración cargada correctamente.")
     except Exception as e:
         print(f"Error al cargar la configuración: {e}")
-    bot.dispatch("extensions_ready")
-    await interaction.followup.send(f"Se han recargado los cogs: {len(synced)} y configuración cargada correctamente.", ephemeral=True)
+    await interaction.followup.send(f"Se han recargado {len(synced)} comandos y configuración cargada correctamente.", ephemeral=True)
 
 # Bot execution
 @bot.event
