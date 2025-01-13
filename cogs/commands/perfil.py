@@ -4,13 +4,13 @@ from discord.ext import commands
 from cogs.utils.gacha.get_user_data import getUserData
 
 
-class perfil(commands.Cog):
+class Perfil(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.get_user_data_cog = getUserData(bot)
 
         @bot.tree.command(name="perfil", description="Consulta el perfil de un usuario.")
-        async def perfil(self, interaction: discord.Interaction, user: discord.User = None):
+        async def perfil(interaction: discord.Interaction, user: discord.User = None):
             # Si no se pasa un usuario, se usa el que ejecutó el comando
             if user is None:
                 user = interaction.user
@@ -70,4 +70,4 @@ class perfil(commands.Cog):
             # Enviar el embed con la respuesta
             await interaction.followup.send(embed=embed)
 async def setup(bot):
-    await bot.add_cog(perfil(bot))
+    await bot.add_cog(Perfil(bot))

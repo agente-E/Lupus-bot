@@ -39,10 +39,10 @@ class OnMessage (commands.Cog):
         # Gets the user data form the database
         current_time = time.time()
         user_id = str(message.author.id)
-        user_data = self.get_user_data_cog.get_user_data(user_id)
-        echoes = user_data.get('Echoes', 0)
-        experience = user_data.get('Experience', 0)
-        last_message = user_data.get('Last message', 0)
+        user_data = self.get_user_data_cog.get_user_data(user_id)      
+        echoes = user_data['Echoes']
+        experience = user_data['Experience']
+        last_message = user_data['Last message']
 
         # Checks if a minute has been passed
         if last_message is None or last_message == 0 or current_time - last_message >= 60:
