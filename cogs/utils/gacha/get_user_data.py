@@ -2,6 +2,7 @@ import discord
 import requests
 from discord.ext import commands
 
+
 class getUserData(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -10,15 +11,13 @@ class getUserData(commands.Cog):
     def get_users_levels(self):
         try:
             # URL API
-            users_url = f'{self.pb_url}/api/collections/USERS/records?perPage=10&sort=-level&fields=id,level'
-
+            users_url = f'{self.pb_url}/api/collections/USERS/records?fields=id,level'
             response = requests.get(users_url)
             users_data = response.json()
             # Filtrar y ordenar los usuarios por el campo 'level' (de mayor a menor)
             users_sorted = sorted(users_data['items'], key=lambda x: x['level'], reverse=True)
             # Crear una lista con los 'id' y 'level' de cada usuario
-            users_level_info = [{'ID': user['id'],
-                                'Level': user['level']} for user in users_sorted]
+            users_level_info = [{'ID': user['id'], 'Level': user['level']} for user in users_sorted]
             # Retornar la lista de usuarios con su id y level
             return users_level_info
 

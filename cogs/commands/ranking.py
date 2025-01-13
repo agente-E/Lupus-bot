@@ -13,13 +13,12 @@ class Ranking(commands.Cog):
             try:
                 # Obtener los datos de los usuarios (ID y niveles)
                 user_data = self.get_user_data_cog.get_users_levels()
-                print(user_data)
                 # Ordenar los usuarios por su nivel (de mayor a menor)
                 sorted_data = sorted(user_data, key=lambda x: x["Level"], reverse=True)
 
                 # Crear el embed para mostrar el ranking
                 embed = discord.Embed(
-                    title="🏆Ranking de usuarios con más Nivel🏆",
+                    title="🏆 Ranking de usuarios con más Nivel 🏆",
                     color=discord.Color.blurple()
                 )
 
@@ -33,7 +32,7 @@ class Ranking(commands.Cog):
                     )
 
                 # Enviar el embed con la respuesta
-                await interaction.response.send_message(embed=embed, ephemeral=True)
+                await interaction.response.send_message(embed=embed,)
             
             except Exception as e:
                 # Manejo de errores

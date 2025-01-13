@@ -39,7 +39,7 @@ class OnMessage (commands.Cog):
         # Gets the user data form the database
         current_time = time.time()
         user_id = str(message.author.id)
-        user_data = self.get_user_data_cog.get_user_data(user_id)      
+        user_data = self.get_user_data_cog.get_user_data(user_id)
         echoes = user_data['Echoes']
         experience = user_data['Experience']
         last_message = user_data['Last message']
