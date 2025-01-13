@@ -10,7 +10,7 @@ class perfil(commands.Cog):
         self.get_user_data_cog = getUserData(bot)
 
         @bot.tree.command(name="perfil", description="Consulta el perfil de un usuario.")
-        async def perfil(interaction: discord.Interaction, user: discord.User = None):
+        async def perfil(self, interaction: discord.Interaction, user: discord.User = None):
             # Si no se pasa un usuario, se usa el que ejecutó el comando
             if user is None:
                 user = interaction.user
