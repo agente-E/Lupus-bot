@@ -26,8 +26,6 @@ class getUserData(commands.Cog):
             # Manejo de excepciones
             return {'error': str(e)}
 
-
-
     def get_user_data(self, user_id: str):
         try:
             user_url = f'{self.pb_url}/api/collections/USERS/records/{user_id}'
@@ -42,6 +40,7 @@ class getUserData(commands.Cog):
                     obtained_roles = []
                 try:
                     roles = []
+                    role_probability = []
                     for role in obtained_roles:
                         for role_id in role.get('role_id', []):
                             role_url = f'{self.pb_url}/api/collections/ROLES/records/{role_id}'
@@ -49,6 +48,7 @@ class getUserData(commands.Cog):
                             if role_data_response.status_code == 200:
                                 role_data = role_data_response.json()
                                 roles.append(role_data.get('name', 'Unknown'))
+                                role_probability.append(str(role_data.get('probability', 'Unknown')))
                 except:
                     print("No elegible roles")
                 user_info = {
@@ -60,6 +60,7 @@ class getUserData(commands.Cog):
                     "Last Gacha": user_data.get("last_gacha", "No Data"),
                     "Last message": user_data.get("last_message", "No data"),
                     "Roles": ", ".join(roles) if roles else "No roles obtained",
+                    "Role probability": ", ".join(map(str, role_probability)) if role_probability else "No probability",
                     "Created": user_data["created"],
                     "Updated": user_data["updated"]
                 }
@@ -67,7 +68,6 @@ class getUserData(commands.Cog):
             else:
                 print(f"Usuario con el ID {user_id} no se encontró en la base de datos. Creando nuevo perfil")
                 user_data = self.create_new_user_profile(user_id)
-                print(user_data)
                 obtained_roles_url = f'{self.pb_url}/api/collections/OBTAINED_ROLES/records?filter=user_id="{user_id}"'
                 obtained_roles_response = requests.get(obtained_roles_url)
                 if obtained_roles_response.status_code == 200:
@@ -90,8 +90,8 @@ class getUserData(commands.Cog):
                     "Echoes": user_data.get("echoes", "No Data"),
                     "Experience": user_data.get("experience", "No Data"),
                     "Level": user_data["level"],
-                    "Pity Counter": user_data.get("pity_counter", "No Data"),
-                    "Last Gacha": user_data.get("last_gacha", "No Data"),
+                    "Pity counter": user_data.get("pity_counter", "No Data"),
+                    "Last gacha": user_data.get("last_gacha", "No Data"),
                     "Last message": user_data.get("last_message", "No data"),
                     "Roles": ", ".join(roles) if roles else "No roles obtained",
                     "Created": user_data["created"],
