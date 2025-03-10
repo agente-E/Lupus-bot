@@ -22,20 +22,26 @@ intents.dm_messages = True # Permission to send messages though DM
 intents.voice_states = True # Permission to receive voice state changes
 bot = commands.Bot(command_prefix = "dw/", intents=intents) # Definition of the bot variable with prefix dw/
 
+# Loads the cogs and assigns them to the bot
 async def load_cogs(bot):
     cogs_names = []
-    # Looks all files through cogs
+
+    # Looks all files through cogs folder
     for root, dirs, files in os.walk("cogs"):
         for file in files:
             if file.endswith(".py") and file != "__init__.py":
+                
                 # Get the name of the directory
                 cog_name = os.path.splitext(os.path.relpath(os.path.join(root, file)))[0]
-                cog_name = cog_name.replace(os.sep, ".")  # Convierte las barras a puntos
+                cog_name = cog_name.replace(os.sep, ".")
                 cogs_names.append(cog_name)
-    # Carga todas las extensiones encontradas
+
+    # Loads all found cogs
     for cog in cogs_names:
+
+        # Checks if it's already loaded
         if cog in bot.extensions:
-            print(f"Cog '{cog}' is already loaded. Unloading and reloading.")
+            print(f"Cog '{cog}' ya está cargado, recargando.")
             try:
                 await bot.unload_extension(cog)  # Unload the cog
                 print(f"Cog '{cog}' unloaded successfully.")
@@ -43,27 +49,36 @@ async def load_cogs(bot):
                 print(f"Failed to unload cog '{cog}'. Error: {e}")
         try:
             await bot.load_extension(cog)
-            print(f"Cog '{cog}' cargado con éxito.")
+            print(f"Cog '{cog}' cargado con exito.")
         except Exception as e:
-            print(f"{e}")
-            # print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
+            print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
 
-# Loads the config.json
+# Loads the config.json and assigns it to the bot
 async def config_load():
-    # Open the filewith async
+    # Check if the config.json is already loaded
+    if hasattr(bot, 'config'):
+            
+        # Unload if loaded
+        print('Configuración cargada, recargando.')
+        del bot.config
+
+    # Open the file with async
     async with aiofiles.open("config.json", mode="r") as f:
+            
         # Load the content of the file as a dictionary
         config_content = await f.read()
         config = json.loads(config_content)
+        
     return config
-
 
 @bot.tree.command(name="refresh", description="Recarga los cogs del bot admin")
 @app_commands.default_permissions(administrator=True)
 async def refresh(interaction: discord.Interaction):
-    await interaction.response.defer(ephemeral=True, thinking=True)
+    await interaction.response.defer(ephemeral=False, thinking=True)
     await load_cogs(bot)
     try:
+        
+        # Shows the loaded cogs
         synced = await bot.tree.sync()
         print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
         commands = await bot.tree.fetch_commands() # Show syncronized commands  
@@ -71,6 +86,7 @@ async def refresh(interaction: discord.Interaction):
     except Exception as e:
         print(f'Error al sincronizar los comandos de aplicación: {e}')
     try:
+
         # Loads the config.json
         bot.config = await config_load()
         print("Configuración cargada correctamente.")
@@ -84,11 +100,13 @@ asyncio.run(load_cogs(bot))
 @bot.event
 async def on_ready(): # Start event
     try:
+        
         # Loads the config.json
         bot.config = await config_load()
         print("Configuración cargada correctamente.")
     except Exception as e:
         print(f"Error al cargar la configuración: {e}")
+    
     # Get all the slash commands
     try:
         synced = await bot.tree.sync()
@@ -102,6 +120,7 @@ async def on_ready(): # Start event
     # check_live_status.start()
     # if not check_for_updates.is_running():
     #     check_for_updates.start()
+
     # Looks all channels on the discord servers
     for guild in bot.guilds:
         print(f"En el servidor: {guild.name}")
@@ -111,7 +130,7 @@ async def on_ready(): # Start event
             for user_id, _ in channel.voice_states.items():
                 member = guild.get_member(user_id)
                 print(f"Miembro {member.name} está en el canal: {channel.name}")
-                # asyncio.create_task(track_voice_time(member))
+                # asyncio.create_task(track_voice_time(member)) (remake todo)
     
     # Makes the bot RPC change to "Jugando Deepwoken"
     await bot.change_presence(activity=discord.Activity(name="Deepwoken", type=0))
