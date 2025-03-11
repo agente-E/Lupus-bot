@@ -50,7 +50,7 @@ async def create_welcome_image(member):
         # In case that the avatar is null, use a default one instead
         except AttributeError:
             print(f"{member.name} no tiene avatar, usando imagen predeterminada.")
-            profile_image = Image.open('assets/images/defaultAvatar.png').resize((350, 350))
+            profile_image = Image.open('assets/images/defaultAvatar.png').resize((350, 350)).convert("RGBA")
             mask = Image.new('L', profile_image.size, 0)
             draw_mask = ImageDraw.Draw(mask)
             draw_mask.ellipse((0, 0, profile_image.size[0], profile_image.size[1]), fill=255)
