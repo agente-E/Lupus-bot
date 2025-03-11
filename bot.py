@@ -54,14 +54,7 @@ async def load_cogs(bot):
             print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
 
 # Loads the config.json and assigns it to the bot
-async def config_load():
-    # Check if the config.json is already loaded
-    if hasattr(bot, 'config'):
-            
-        # Unload if loaded
-        print('Configuración cargada, recargando.')
-        del bot.config
-
+async def config_load():       
     # Open the file with async
     async with aiofiles.open("config.json", mode="r") as f:
             
@@ -86,7 +79,9 @@ async def refresh(interaction: discord.Interaction):
     except Exception as e:
         print(f'Error al sincronizar los comandos de aplicación: {e}')
     try:
-
+        # Unload if loaded
+        print('Configuración cargada, recargando.')
+        del bot.config
         # Loads the config.json
         bot.config = await config_load()
         print("Configuración cargada correctamente.")
@@ -100,7 +95,6 @@ asyncio.run(load_cogs(bot))
 @bot.event
 async def on_ready(): # Start event
     try:
-        
         # Loads the config.json
         bot.config = await config_load()
         print("Configuración cargada correctamente.")
