@@ -54,7 +54,7 @@ async def load_cogs(bot):
             print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
 
 # Loads the config.json and assigns it to the bot
-async def config_load():       
+async def load_config():       
     # Open the file with async
     async with aiofiles.open("config.json", mode="r") as f:
             
@@ -64,13 +64,17 @@ async def config_load():
         
     return config
 
+async def local_clock(bot):
+    while True:
+        # TODO things that will check every second
+        await asyncio.sleep(1)
+
 @bot.tree.command(name="refresh", description="Recarga los cogs del bot admin")
 @app_commands.default_permissions(administrator=True)
 async def refresh(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False, thinking=True)
     await load_cogs(bot)
     try:
-        
         # Shows the loaded cogs
         synced = await bot.tree.sync()
         print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
@@ -83,7 +87,7 @@ async def refresh(interaction: discord.Interaction):
         print('Configuración cargada, recargando.')
         del bot.config
         # Loads the config.json
-        bot.config = await config_load()
+        bot.config = await load_config()
         print("Configuración cargada correctamente.")
     except Exception as e:
         print(f"Error al cargar la configuración: {e}")
@@ -96,7 +100,7 @@ asyncio.run(load_cogs(bot))
 async def on_ready(): # Start event
     try:
         # Loads the config.json
-        bot.config = await config_load()
+        bot.config = await load_config()
         print("Configuración cargada correctamente.")
     except Exception as e:
         print(f"Error al cargar la configuración: {e}")
@@ -110,10 +114,7 @@ async def on_ready(): # Start event
     except Exception as e:
         print(f'Error al sincronizar los comandos de aplicación: {e}')
     
-    # Start the function to check if I'm on stream (remake todo)
-    # check_live_status.start()
-    # if not check_for_updates.is_running():
-    #     check_for_updates.start()
+    asyncio.create_task(local_clock(bot))
 
     # Looks all channels on the discord servers
     for guild in bot.guilds:
@@ -124,10 +125,12 @@ async def on_ready(): # Start event
             for user_id, _ in channel.voice_states.items():
                 member = guild.get_member(user_id)
                 print(f"Miembro {member.name} está en el canal: {channel.name}")
-                # asyncio.create_task(track_voice_time(member)) (remake todo)
-    
+                # Add user to a list to track how much time it has been passed on a call to give the echoes and exprerience TODO
+
     # Makes the bot RPC change to "Jugando Deepwoken"
     await bot.change_presence(activity=discord.Activity(name="Deepwoken", type=0))
+    
+    # When the bot finishes to do all their tasks
     print(f'Bot {bot.user.name} está listo y conectado a Discord!')
 
 # Run the bot
