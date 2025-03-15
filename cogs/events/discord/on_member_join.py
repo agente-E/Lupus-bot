@@ -2,7 +2,7 @@ import discord
 import io
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont
-from cogs.utils.gacha.get_user_data import *
+# from cogs.utils.gacha.get_user_data import *
 
 # Create an image with the name and profile image
 async def create_welcome_image(member):
@@ -14,8 +14,8 @@ async def create_welcome_image(member):
             draw = ImageDraw.Draw(background)
         except Exception as e:
             raise RuntimeError(f"Error al crear la imagen de fondo: {e}")
-            # Get the font
         try:
+            # Get the font
             font_path = 'assets/fonts/Fondamento-Regular.ttf'
             font_size = 75
             font = ImageFont.truetype(font_path, font_size)
