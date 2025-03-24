@@ -45,7 +45,7 @@ async def load_cogs(bot):
             try:
                 # TODO Add dispatch to running tasks
                 await bot.unload_extension(cog)  # Unload the cog
-                print(f"Cog '{cog}' unloaded successfully.")
+                print(f"Cog '{cog}' descargado correctamente.")
             except Exception as e:
                 print(f"Failed to unload cog '{cog}'. Error: {e}")
         try:
@@ -92,8 +92,6 @@ async def refresh(interaction: discord.Interaction):
 
     await interaction.followup.send(f"Se han recargado {len(synced)} comandos y configuración cargada correctamente.", ephemeral=True)
 
-asyncio.run(load_cogs(bot))
-
 # Bot execution
 @bot.event
 async def on_ready(): # Start event
@@ -103,7 +101,11 @@ async def on_ready(): # Start event
         print("Configuración cargada correctamente.")
     except Exception as e:
         print(f"Error al cargar la configuración: {e}")
-    
+    try:
+        # Load all the cogs
+        await load_cogs(bot)
+    except Exception as e:
+        print(f"Error al cargar la configuración: {e}")    
     # Get all the slash commands
     try:
         synced = await bot.tree.sync()

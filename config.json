@@ -1,14 +1,15 @@
 {
   "roles": {
     "deepwoken_updates": 1295766809726812221,
-    "twitch_notify": 1301495718619381771
+    "twitch_notify": 1301495718619381771,
+    "image_perms": 1329726440064680006
   },
   "channels": {
-    "deepwoken_updates": 1295766971937325097,
+    "deepwoken_updates": 1327875607216001158,
     "welcome": 1300376505230037045,
     "twitch_notify": 1301496350122311743,
-    "suggestions": 1327875968961871962,
-    "suggest": 1327875607216001158
+    "suggestions": 1327875607216001158,
+    "suggest": 1327875968961871962
   },
   "gacha_settings": {
     "pity_threshold": 60,

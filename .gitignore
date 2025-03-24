@@ -172,3 +172,4 @@ cython_debug/
 config.
 temp.py
 database/
+DeeWake.py

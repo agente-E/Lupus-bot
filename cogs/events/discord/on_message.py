@@ -3,9 +3,8 @@ from discord.ext import commands
 from discord import app_commands
 import re
 import time
-import asyncio
-from cogs.utils.gacha import GetUserData
-from cogs.events.tasks import CheckForUpdates
+from PIL import Image
+# from cogs.utils.gacha import GetUserData
 
 class OnMessage(commands.Cog):
     def __init__(self, bot):
@@ -15,16 +14,17 @@ class OnMessage(commands.Cog):
         self.updates_channel_obj = self.bot.get_channel(self.updates_channel)
         self.suggest_channel = self.bot.config.get("channels", {})["suggest"]
         self.suggestions_channel = self.bot.config.get("channels", {})["suggestions"]
-        self.dwupdates = self.bot.config.get("roles", {})["deepwoken_updates"]
-        self.dwupdates_role = f"<@&{self.dwupdates}>"
+        self.suggestions_channel_obj = self.bot.get_channel(self.suggestions_channel)
+        self.image_perms = self.bot.config.get("roles", {})["image_perms"]
 
-        self.tinky_emoji = self.bot.get_emoji(1295755914862923837)
-        self.emery_emoji = self.bot.get_emoji(1295755990544941127)
+        self.tinky_emoji = self.bot.get_emoji(1327884746776121444)
+        self.emery_emoji = self.bot.get_emoji(1327884755391479828)
         self.responses = {
             893871497876213791: "Yo también te quiero Ken <3",
             730442077011312651: "我希望我是一只鸟",
             740294285366395001: "Me cago en tus ### hijo de la grandisima ###. Ya va siendo hora de que te ##@@/*",
             992172983017812099: "Mandame fotos de tu erizo :3",
+            509808641063387147: "Liquido reproductivo",
             474625767377207326: "Es Vianix el pescador, con su caña y su sombrilla..."
         }
 
@@ -39,96 +39,8 @@ class OnMessage(commands.Cog):
     # Processes the message and sends it as a suggestion in a channel
     async def checkSuggestion(self, message):
 
-        # Delete the message if it has a link and send report DM
-        if re.search(self.url_pattern, message.content):
-            try:
-                await message.author.send("No puedes enviar enlaces en las sugerencias")
-            except discord.Forbidden:
-
-                # The bot can't send DMs to the user
-                print(f"No se pudo enviar DM a {message.author.name}.")
-        else:
-
-            # Delete the first three characters
-            suggestion = message.content[3:].strip()
-
-            # Get the channel on the server by the ID
-            suggestions_channel_obj = self.bot.get_channel(
-                self.suggestions_channel)
-
-            # Create an embed for the suggestion
-            if suggestions_channel_obj:
-                embed = discord.Embed(
-                    title="💡 ¡Nueva Sugerencia Recibida! 💡",
-                    color=discord.Color.green()
-                )
-
-                embed.add_field(
-                    name="📝 Sugerencia:",
-                    value=f"**__{suggestion}__**",
-                    inline=False
-                )
-
-                # Set the avatar of the author as thumbnail
-                embed.set_thumbnail(url=message.author.avatar.url)
-
-                # Add the author name
-                embed.set_author(
-                    name=f"💬 Sugerencia Propuesta por {message.author.name}"
-                )
-
-                # Send the embed and save it
-                suggestion_message = await suggestions_channel_obj.send(embed=embed)
-
-                # Checks if the emojis exist and reacts with them to the message
-                if self.tinky_emoji and self.emery_emoji:
-                    await suggestion_message.add_reaction(self.tinky_emoji)
-                    await suggestion_message.add_reaction(self.emery_emoji)
-                else:
-                    print("No se pudieron encontrar los emotes personalizados.")
-
-                # Message the user to DM to thank for the suggestion
-                try:
-                    dm_embed = discord.Embed(
-                        title="Gracias por tu sugerencia",
-                        description=f"Tu sugerencia fue enviada con éxito:\n\n{suggestion}",
-                        color=discord.Color.green()
-                    )
-                    dm_embed.set_footer(
-                        text="Los usuarios valorarán tu sugerencia.")
-                    await message.author.send(embed=dm_embed)
-                except discord.Forbidden:
-
-                    # The bot can't send DMs to the user
-                    print(f"No se pudo enviar DM a {message.author.name}.")
-
-                await message.delete()
-
-    # For every message sent to the bot or in the server
-    @commands.Cog.listener()
-    async def on_member_join(self, message):
-        
-        # Stops if the message is from the bot
-        if message.author.bot:
-            return
-
-        # The message don't come from a server
-        if message.guild is None:
-            await self.checkDM(message)
-
-        # Get the role "Cuarentena" and delete messages from users with the role
-        quarantine_role = discord.utils.get(
-            message.guild.roles, name="Cuarentena")
-        if quarantine_role:
-            if quarantine_role in message.author.roles:
-                await message.delete()
-
-        # Checks if the message has been sent on suggestions channel and startswith ".s "
-        if message.channel.id == self.suggest_channel and message.content.startswith('.s '):
-            await self.checkSuggestion()
-
-        # Warn the user to send the message correctly though DM
-        elif message.channel.id == self.suggest_channel and not message.content.startswith('.s '):
+        # Checks if the message starts with ".s "
+        if not message.content.startswith('.s '):
             await message.delete()
             try:
 
@@ -138,28 +50,141 @@ class OnMessage(commands.Cog):
 
                 # Can't send DM to the user
                 print(f"No se pudo enviar DM a {message.author.name}.")
+            print("Incorrect suggestion message sent") # TODO LOG
+            return
+        
+        # If it has a link and send report DM
+        if re.search(self.url_pattern, message.content):
+            try:
+                await message.author.send("No puedes enviar enlaces en las sugerencias")
+                await message.delete()
+                return
+            except discord.Forbidden:
+
+                # The bot can't send DMs to the user
+                print(f"No se pudo enviar DM a {message.author.name}.")
+                return
+            
+        # In case that the channel cannot be found
+        if not self.suggestions_channel_obj:
+            print(f"No se ha encontrado el canal")
+            await message.delete()
+            return
+        
+        # Delete the first three characters
+        suggestion = message.content[3:].strip()
+
+        # Create embed
+        embed = discord.Embed(
+            title="💡 ¡Nueva Sugerencia Recibida! 💡",
+            color=discord.Color.green()
+        )
+
+        embed.add_field(
+            name="📝 Sugerencia:",
+            value=f"**__{suggestion}__**",
+            inline=False
+        )
+        
+        # Add the author name
+        embed.set_author(
+            name=f"💬 Sugerencia Propuesta por {message.author.name}"
+        )
+
+        # Set the thumbnail as the pfp of the user
+        try:
+            embed.set_thumbnail(url=message.author.avatar.url)
+
+        # In case that the avatar is null, use a default one instead
+        except AttributeError:
+            print(f"{message.author.name} no tiene avatar, usando imagen predeterminada.")
+            
+            # Set the avatar of the author as thumbnail
+            embed.set_thumbnail(url="https://images-ext-1.discordapp.net/external/9NmCvbrWMNfRMMT_d42ejZRNvj1rseRwMlyik_0Epqc/https/discord.com/assets/788f05731f8aa02e.png?format=webp&quality=lossless")
+        
+        # Send the embed and save it
+        suggestion_message = await self.suggestions_channel_obj.send(embed=embed)
+
+        # Checks if the emojis exist
+        if not self.tinky_emoji and self.emery_emoji:
+            print("No se pudieron encontrar los emotes personalizados.")
+            await message.delete()
+            return
+        
+        # Add the reaction to the embed
+        await suggestion_message.add_reaction(self.tinky_emoji)
+        await suggestion_message.add_reaction(self.emery_emoji)
+
+        # Message the user to DM to thank for the suggestion
+        try:
+            dm_embed = discord.Embed(
+                title="Gracias por tu sugerencia",
+                description=f"Tu sugerencia fue enviada con éxito:\n\n{suggestion}",
+                color=discord.Color.green()
+            )
+            dm_embed.set_footer(
+                text="Los usuarios valorarán tu sugerencia.")
+            await message.author.send(embed=dm_embed)
+        except discord.Forbidden:
+
+            # The bot can't send DMs to the user
+            print(f"No se pudo enviar DM a {message.author.name}.")
+
+        await message.delete()
+
+    # For every message sent to the bot or in the server
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        
+        # Stops if the message is from the bot
+        if message.author.bot:
+            return
+
+        # The message don't come from a server
+        if message.guild is None:
+            await self.checkDM(message)
+            return
+
+        # Get the role "Cuarentena" and delete messages from users with the role
+        quarantine_role = discord.utils.get(
+            message.guild.roles, name="Cuarentena")
+        if quarantine_role:
+            if quarantine_role in message.author.roles:
+                await message.delete()
+                return
+
+        # Checks if the message has been sent on suggestions channel
+        if message.channel.id == self.suggest_channel:
+            await self.checkSuggestion(message)
+            return
 
         # Check if the user has permission to send url
         if re.search(self.url_pattern, message.content):
-            roles = [role.name for role in message.author.roles]
-            if "Permisos de imagen" not in roles:
+            roles = [role.id for role in message.author.roles]
+            if self.image_perms not in roles:
                 await message.delete()
                 try:
                     dm_channel = await message.author.create_dm()
-                    await dm_channel.send(f"Hola {message.author.name}, para poder enviar enlaces debes desbloquear el rol de **Permisos de imagen**. Este rol se consigue realizando el comando `/roll` en el canal [Lupus Roll](https://discord.com/channels/776247434384375818/1312478372357603399).")
+                    await dm_channel.send(f"Hola {message.author.name}, para poder enviar enlaces debes desbloquear el rol de **Permisos de imagen**. Este rol se consigue realizando el comando `/roll` en el canal https://discord.com/channels/776247434384375818/1312478372357603399.")
                 except Exception as e:
                     print(f"Error al enviar DM a {message.author.name}: {e}")
 
         # Checks if the message has been sent in updates channel
         if message.channel.id == self.updates_channel:
             
-            # Gets the 'CheckForUpdates' cog
-            check_for_updates_obj:CheckForUpdates = self.bot.get_cog("CheckForUpdates")
+            # Warn on the terminal
+            print("Mensaje enviado en el canal de actualización") # TODO LOG
             
+            # Gets the 'CheckForUpdates' cog
+            check_for_updates_obj = self.bot.get_cog("CheckForUpdates")
+            
+            # If the task is not started, start it
+            if not check_for_updates_obj.is_running:
+                await check_for_updates_obj.run_task()
+
             # Set the last message for the updates
             last_message = message.created_at         
-            check_for_updates_obj.set_last_message(last_message)
-
+            await check_for_updates_obj.set_last_message(last_message)
 
         # Responses Meow if the message contains meow
         if re.search('meow', (message.content).lower()):
@@ -169,16 +194,16 @@ class OnMessage(commands.Cog):
         user_id = int(message.author.id)
 
         # Create user object
-        user_data = GetUserData(user_id) # TODO
-        last_message_time = user_data.get_last_message()  # Get attribute
+        # user_data = GetUserData(user_id) # TODO
+        # last_message_time = user_data.get_last_message()  # Get attribute
 
         # Gets the current time
         current_time = time.time()
 
         # Checks if a minute has been passed between the last message
-        if current_time - last_message_time >= 60:
+        # if current_time - last_message_time >= 60:
             # TODO utils.gacha.give_rewards
-            pass
+        #     pass
         await self.bot.process_commands(message)
 
 
