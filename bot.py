@@ -13,7 +13,7 @@ load_dotenv()
 # Get private data
 TOKEN = os.getenv("TOKEN")
 
-# Permisos del bot
+# Bot perms
 intents = discord.Intents.default()  # Permission to read messages
 intents.message_content = True  # Reads the messages content
 intents.members = True  # Permission to read member events (Join, leave...)
@@ -22,7 +22,6 @@ intents.dm_messages = True # Permission to send messages though DM
 intents.voice_states = True # Permission to receive voice state changes
 bot = commands.Bot(command_prefix = "dw/", intents=intents) # Definition of the bot variable with prefix dw/
 
-# Loads the cogs and assigns them to the bot
 async def load_cogs(bot):
     cogs_names = []
 
@@ -38,21 +37,24 @@ async def load_cogs(bot):
 
     # Loads all found cogs
     for cog in cogs_names:
+        # Get only the name of the cog (last part after the last dot)
+        cog_display_name = cog.split('.')[-1]        
 
         # Checks if it's already loaded
         if cog in bot.extensions:
-            print(f"Cog '{cog}' ya está cargado, recargando.")
+            print(f"Cog '{cog_display_name}' ya está cargado, recargando.")
             try:
                 # TODO Add dispatch to running tasks
                 await bot.unload_extension(cog)  # Unload the cog
-                print(f"Cog '{cog}' descargado correctamente.")
+                print(f"Cog '{cog_display_name}' descargado correctamente.")
             except Exception as e:
-                print(f"Failed to unload cog '{cog}'. Error: {e}")
+                print(f"Failed to unload cog '{cog_display_name}'. Error: {e}")
+
         try:
             await bot.load_extension(cog)
-            print(f"Cog '{cog}' cargado con exito.")
+            print(f"Cog '{cog_display_name}' cargado con exito.")
         except Exception as e:
-            print(f"No se pudo cargar el cog '{cog}'. Error: {e}")
+            print(f"No se pudo cargar el cog '{cog_display_name}'. Error: {e}")
 
 # Loads the config.json and assigns it to the bot
 async def load_config():       
@@ -70,15 +72,6 @@ async def load_config():
 @app_commands.default_permissions(administrator=True)
 async def refresh(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=False, thinking=True)
-    await load_cogs(bot)
-    try:
-        # Shows the loaded cogs
-        synced = await bot.tree.sync()
-        print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
-        commands = await bot.tree.fetch_commands() # Show syncronized commands  
-        print(", ".join(command.name for command in commands)) # Separated with comma
-    except Exception as e:
-        print(f'Error al sincronizar los comandos de aplicación: {e}')
     try:
         # Unload config.json
         print('Recargando configuración.')
@@ -89,6 +82,15 @@ async def refresh(interaction: discord.Interaction):
         print("Configuración cargada correctamente.")
     except Exception as e:
         print(f"Error al cargar la configuración: {e}")
+    await load_cogs(bot)
+    try:
+        # Shows the loaded cogs
+        synced = await bot.tree.sync()
+        print(f'Se han sincronizado {len(synced)} comandos de la aplicación.')
+        commands = await bot.tree.fetch_commands() # Show syncronized commands  
+        print(", ".join(command.name for command in commands)) # Separated with comma
+    except Exception as e:
+        print(f'Error al sincronizar los comandos de aplicación: {e}')
 
     await interaction.followup.send(f"Se han recargado {len(synced)} comandos y configuración cargada correctamente.", ephemeral=True)
 
@@ -126,7 +128,7 @@ async def on_ready(): # Start event
             for user_id, _ in channel.voice_states.items():
                 member = guild.get_member(user_id)
                 print(f"Miembro {member.name} está en el canal: {channel.name}")
-                # TODO Add user to a list to track how much time it has been passed on a call to give the echoes and exprerience 
+                # TODO Add user to a list to track how much time it has been passed on a call to give the notes and exprerience 
 
     # Makes the bot RPC change to "Jugando Deepwoken"
     await bot.change_presence(activity=discord.Activity(name="Deepwoken", type=0))

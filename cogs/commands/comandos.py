@@ -2,6 +2,7 @@
 
 import discord
 from discord.ext import commands
+from cogs.utils.gacha.interact_with_data import InteractWithDatabase
 
 class Comandos(commands.Cog):
     def __init__(self, bot):
@@ -25,31 +26,17 @@ class Comandos(commands.Cog):
                 color=discord.Color.green()
             )
 
+            database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
+
+            user_data = database.get_rewards()
+
+            print(user_data)
+            
             # Add all commands to the embed
             embed.add_field(name="Comandos Slash", value="\n".join(self.comandos_disponibles), inline=False)
-
-            # Enviar el embed al canal
+        
+            # Send the embed to the channel
             await interaction.response.send_message(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Comandos(bot))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
