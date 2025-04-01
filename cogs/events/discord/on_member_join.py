@@ -82,15 +82,8 @@ async def create_welcome_image(member):
         print(f"Error en create_welcome_image: {e}")
         return None
 
-class OnMemberJoin(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-
-    # When a user joins the server
-    @commands.Cog.listener()
-    async def on_member_join(self, member):
-        welcome_channel_id = self.bot.config['channels'].get("welcome")
-        # Create welcome embed for MD
+async def send_welcome_dm(member):
+            # Create welcome embed for MD
         embed1 = discord.Embed(
             title="¡Bienvenido al servidor!",
             description=f"¡Hola {member.mention}! Estamos encantados de que te hayas unido a nuestra comunidad. Aquí tienes una guía para empezar:",
@@ -161,28 +154,43 @@ class OnMemberJoin(commands.Cog):
             await dm_channel.send(embed=embed3)
         except discord.Forbidden:
                 print(f"No se pudieron enviar los DMs a {member.name}. El usuario tiene bloqueados los DMs.")
+
+
+class OnMemberJoin(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.welcome_channel_id = self.bot.config.get("channels", {})["welcome"]
+        self.user_rol_name = "Usuario"
+        self.announcement_role_name = "Anuncios"
+
+    # When a user joins the server
+    @commands.Cog.listener()
+    async def on_member_join(self, member):
         
+        # Send welcome DM to the new user
+        await send_welcome_dm(member=member)
+
         # Assing user and announcements roles to the user
-        user_rol_name = "Usuario"
-        announcement_role_name = "Anuncios"
         guild = member.guild
+
         # Finds the roles by name
-        users_role = discord.utils.get(guild.roles, name=user_rol_name)
-        announcement_role = discord.utils.get(guild.roles, name=announcement_role_name)
+        users_role = discord.utils.get(guild.roles, name=self.user_rol_name)
+        announcement_role = discord.utils.get(guild.roles, name=self.announcement_role_name)
+        
         # If the role exists, assign it to the user
         if users_role:
             await member.add_roles(users_role)
-            print(f"Rol {user_rol_name} asignado a {member.name}")
+            print(f"Rol {self.user_rol_name} asignado a {member.name}")
         else:
-            print(f"Rol {user_rol_name} no encontrado en el servidor.")
+            print(f"Rol {self.user_rol_name} no encontrado en el servidor.")
         if announcement_role:
             await member.add_roles(announcement_role)
-            print(f"Rol {announcement_role_name} asignado a {member.name}")
+            print(f"Rol {self.announcement_role_name} asignado a {member.name}")
         else:
             print(f"Rol {announcement_role} no encontrado en el servidor.")
         
         # Check if welcome channel ID is correct
-        if welcome_channel_id is None:
+        if self.welcome_channel_id is None:
             print("Canal de bienvenida no encontrado, comprueba la ID")
         else:
             welcome_channel = self.bot.get_channel(welcome_channel_id)

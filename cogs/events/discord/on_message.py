@@ -193,18 +193,18 @@ class OnMessage(commands.Cog):
         # Get the user ID as int
         user_id = int(message.author.id)
 
-        # Create user object
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-        user_info = await database.get_user_data(user_id=user_id)
-        database.save_user_data(user_id=user_id, user_data=user_info)
+
+        # Create user object
+        user_data = await database.get_user_data(user_id=user_id)
 
         # Gets the current time
         current_time = time.time()
 
         # Checks if a minute has been passed between the last message
-        # if current_time - last_message_time >= 60:
+        if  user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
             # TODO utils.gacha.give_rewards
-        #     pass
+            database.save_user_data(user_id=user_id, data=user_data)
         await self.bot.process_commands(message)
 
 
