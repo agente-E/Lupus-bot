@@ -155,7 +155,6 @@ async def send_welcome_dm(member):
         except discord.Forbidden:
                 print(f"No se pudieron enviar los DMs a {member.name}. El usuario tiene bloqueados los DMs.")
 
-
 class OnMemberJoin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot

@@ -1,37 +1,34 @@
 # TODO
+import random
+from discord.ext import commands
+from cogs.utils.gacha.interact_with_data import InteractWithDatabase
 
-# import discord
-# import 
+class GiveRewards(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self.__booster_role_name = "Server Booster"
 
-# self.user_last_message_time[user_id] = current_time
+    async def give_time_reward(self, user_data: dict, server_booster_role):
+        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
+        aspects = database.get_aspects()
+        aspect = user_data['aspect']
+        
+        booster_multiplier = 3 if server_booster_role else 1
 
-#   # user_data = get_user_data(user_id)
-#   # aspect = user_data["aspecto"]
-#   booster_role_name = "Server Booster"
-#    if any(role.name == booster_role_name for role in message.author.roles):
-#         if aspect == "Canor":
-#             user_data['echoes'] += random.randint(20, 30)
-#         elif aspect == "Etrean":
-#             user_data['echoes'] += random.randint(5, 35)
-#         else:
-#             user_data['echoes'] += random.randint(15, 25)
-#         if aspect == "Adret":
-#             user_data['experiencia'] += random.randint(
-#                 15 * 2, 25 * 2)
-#         else:
-#             user_data['experiencia'] += random.randint(15, 25)
-#         user_data = await check_and_level_up(user_data, message=message)
-#     else:
-#         if aspect == "Canor":
-#             user_data['echoes'] += random.randint(5, 10)
-#         elif aspect == "Etrean":
-#             user_data['echoes'] += random.randint(0, 10)
-#         else:
-#             user_data['echoes'] += random.randint(1, 5)
-#         if aspect == "Adret":
-#             user_data['experiencia'] += random.randint(
-#                 1 * 2, 5 * 2)
-#         else:
-#             user_data['experiencia'] += random.randint(1, 5)
-#         user_data = await check_and_level_up(user_data, message=message)
-#     save_user_data(user_id, user_data)
+        # Base reward ranges for notes
+        notes_rewards = {
+            "Canor": (5, 10),
+            "Etrean": (0, 10),
+            "default": (1, 5),
+        }
+
+        # Base reward ranges for experience
+        experience_rewards = {
+            "Adret": (1, 5),
+            "default": (1, 5),
+        }
+
+        user_data = await check_and_level_up(user_data)
+
+async def setup(bot):
+    await bot.add_cog(GiveRewards(bot))

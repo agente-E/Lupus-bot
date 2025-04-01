@@ -1,10 +1,9 @@
 import discord
-from discord.ext import commands
-from discord import app_commands
 import re
 import time
-from PIL import Image
+from discord.ext import commands
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
+from utils.gacha.give_rewards import GiveRewards
 
 class OnMessage(commands.Cog):
     def __init__(self, bot):
@@ -16,7 +15,7 @@ class OnMessage(commands.Cog):
         self.suggestions_channel = self.bot.config.get("channels", {})["suggestions"]
         self.suggestions_channel_obj = self.bot.get_channel(self.suggestions_channel)
         self.image_perms = self.bot.config.get("roles", {})["image_perms"]
-
+        self.server_booster = self.bot.config.get("roles", {})["booster"]
         self.tinky_emoji = self.bot.get_emoji(1327884746776121444)
         self.emery_emoji = self.bot.get_emoji(1327884755391479828)
         self.responses = {
@@ -108,12 +107,12 @@ class OnMessage(commands.Cog):
         # Checks if the emojis exist
         if not self.tinky_emoji and self.emery_emoji:
             print("No se pudieron encontrar los emotes personalizados.")
-            await message.delete()
-            return
-        
-        # Add the reaction to the embed
-        await suggestion_message.add_reaction(self.tinky_emoji)
-        await suggestion_message.add_reaction(self.emery_emoji)
+        try:
+            # Add the reaction to the embed
+            await suggestion_message.add_reaction(self.tinky_emoji)
+            await suggestion_message.add_reaction(self.emery_emoji)
+        except Exception as e:
+            print(f"No se han podido poner los emojis en la sugerencia: {e}")
 
         # Message the user to DM to thank for the suggestion
         try:
@@ -190,21 +189,21 @@ class OnMessage(commands.Cog):
         if re.search('meow', (message.content).lower()):
             await message.channel.send("Meow")
 
-        # Get the user ID as int
-        user_id = int(message.author.id)
-
+        # Get cogs from the bot
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
+        giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
 
         # Create user object
-        user_data = await database.get_user_data(user_id=user_id)
+        user_data = await database.get_user_data(user_id=int(message.author.id))
 
         # Gets the current time
         current_time = time.time()
 
         # Checks if a minute has been passed between the last message
-        if  user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
-            # TODO utils.gacha.give_rewards
-            database.save_user_data(user_id=user_id, data=user_data)
+        if user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
+            booster_role = message.author.get_role(self.server_booster) if message.author.get_role(self.server_booster) else None
+            await giver.give_time_reward(data=user_data, server_booster_role=booster_role)
+
         await self.bot.process_commands(message)
 
 
