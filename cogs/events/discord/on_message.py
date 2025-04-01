@@ -4,7 +4,7 @@ from discord import app_commands
 import re
 import time
 from PIL import Image
-# from cogs.utils.gacha import GetUserData
+from cogs.utils.gacha.interact_with_data import InteractWithDatabase
 
 class OnMessage(commands.Cog):
     def __init__(self, bot):
@@ -194,8 +194,9 @@ class OnMessage(commands.Cog):
         user_id = int(message.author.id)
 
         # Create user object
-        # user_data = GetUserData(user_id) # TODO
-        # last_message_time = user_data.get_last_message()  # Get attribute
+        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
+        user_info = await database.get_user_data(user_id=user_id)
+        database.save_user_data(user_id=user_id, user_data=user_info)
 
         # Gets the current time
         current_time = time.time()
