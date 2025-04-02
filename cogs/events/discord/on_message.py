@@ -203,9 +203,8 @@ class OnMessage(commands.Cog):
 
         # Checks if a minute has been passed between the last message
         if  user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
-            # TODO give_rewards
-            
-            database.save_user_data(user_id=user_id, data=user_data)
+            # TODO giveTimeReward
+            print("something to evade errors")
         await self.bot.process_commands(message)
 
 async def setup(bot):
