@@ -202,9 +202,9 @@ class OnMessage(commands.Cog):
         # Checks if a minute has been passed between the last message
         if user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
             booster_role = message.author.get_role(self.server_booster) if message.author.get_role(self.server_booster) else None
-            await giver.give_time_reward(data=user_data, server_booster_role=booster_role)
-
+            giver.give_message_reward(data=user_data, server_booster_role=booster_role)
+            
         await self.bot.process_commands(message)
-
+    
 async def setup(bot):
     await bot.add_cog(OnMessage(bot))
