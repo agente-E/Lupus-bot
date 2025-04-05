@@ -62,19 +62,25 @@ class InteractWithDatabase(commands.Cog):
             print(f"Ha ocurrido un error: {e}")
 
     async def get_random_aspect(self) -> str:
-
+        
         # Get all aspects
         aspects = self.get_aspects()
+        if not aspects:
+            raise ValueError("No aspects found in the database.")
 
-        # Separate the name from the probability
-        names = [aspect['name'] for aspect in aspects]
-        probabilities = [aspect['probability'] for aspect in aspects]
+        # Filter out unwanted aspects for selection
+        filtered_aspects = [a for a in aspects if a['name'] not in ['Auroran', 'Lightborn']]
+        if not filtered_aspects:
+            raise ValueError("All aspects were filtered out (Auroran and Lightborn).")
 
-        # Select the random aspect based on its probability
-        selected_aspect = random.choices(names, probabilities)[0]
-        if selected_aspect == 'Auroran' or selected_aspect == 'Lightborn':
-            await self.get_random_aspect()
+        # Extract names and probabilities
+        names = [aspect['name'] for aspect in filtered_aspects]
+        probabilities = [aspect['probability'] for aspect in filtered_aspects]
+
+        # Select one at random based on probability
+        selected_aspect = random.choices(names, probabilities, k=1)[0]
         return selected_aspect
+
 
     '''Saves the data from a specific user to USER and INVENTORY'''
     def save_user_data(self, user_id: int, data: dict):
@@ -196,34 +202,40 @@ class InteractWithDatabase(commands.Cog):
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
 
-    '''Returns multiple rows from table INVENTORY formated'''
-    def get_user_inventory(self, user_id) -> list:
+    def get_user_inventory(self, user_id) -> dict:
         try:
             # Get the inventory of the user from database
-            user_inventory = self.__client.collection(self.__inventory).get_full_list(query_params={"filter": f"user_id='{str(user_id)}'"})
+            user_inventory = self.__client.collection(self.__inventory).get_full_list(
+                query_params={
+                    "filter": f"user_id='{str(user_id)}'",
+                    "expand": 'item_id'
+                }
+            )
 
-            # Sort the data by item, and quantity
+            # Sort the data by item and quantity
             sorted_inventory = sorted(
                 user_inventory, 
                 key=lambda x: (x.item_id, x.quantity)
             )
 
-            # Extract relevant attributes (item, quantity)
+            # Extract relevant attributes (item name, quantity)
             user_inventory_data = [
-                {'item': record.item_id, 'quantity': record.quantity}  
+                {
+                    'item': getattr(record.expand.get("item_id"), "name", None),
+                    'quantity': record.quantity
+                }
                 for record in sorted_inventory
             ]
-            
+
             return user_inventory_data
+
         except ClientResponseError as e:
-            if e.status != 404:
-                print(f"Ocurrió un error con la base de datos:\n{e}")
-                print(f"Código de estado: {e.status}")
-                return
-            
-            print("No se encontraron datos en la consulta.")
+            print(f"Ocurrió un error con la base de datos:\n{e}")
+            print(f"Código de estado: {e.status}")
+            return
+
         except Exception as e:
-            print(F"Ha ocurrido un error: {e}")
+            print(f"Ha ocurrido un error: {e}")
 
     '''Returns a row from table USERS, level and experience'''
     def get_user_level(self, user_id: int) -> list:

@@ -31,7 +31,7 @@ class OnMessage(commands.Cog):
         
         # Get cog from the bot to interact with the database
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-        
+
         # Get the cog from the bot to give rewards
         giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
 
