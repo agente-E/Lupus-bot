@@ -7,7 +7,7 @@ class Comandos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
-    @app_commands.command(name="comandos", description="Lista todos los comandos disponibles.")
+    @app_commands.command(name="comandos", description="Lista todos los comandos disponibles")
     async def comandos(self, interaction: discord.Interaction):
         avalible_commands = []
 

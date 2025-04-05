@@ -29,8 +29,12 @@ class GiveRewards(commands.Cog):
             data['level'] = level
             data['experience'] = experience
         return data
+    
+    async def give_call_reward(self, data: dict, server_booster_role = None) -> dict:
+        pass
+        # TODO
 
-    async def give_rewards(self, data: dict, server_booster_role = None) -> dict:
+    async def give_message_reward(self, data: dict, server_booster_role = None) -> dict:
         """
         Gives a random amount of exp and notes, with server boost role gives more.
 

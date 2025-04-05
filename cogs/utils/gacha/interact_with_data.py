@@ -157,13 +157,13 @@ class InteractWithDatabase(commands.Cog):
             print(F"Ha ocurrido un error: {e}")
     
     '''Returns multiple rows from table ASPECTS formated'''
-    def get_aspects(self) -> dict:
+    def get_aspects(self) -> list:
         try:
             # Get the name, probabity and color from the databaese
-            aspects = self.__client.collection(self.__aspects).get_full_list(query_params={'fields': 'name, probability, color'})
+            aspects = self.__client.collection(self.__aspects).get_full_list(query_params={'fields': 'name, description, passive, probability, color, exclusive'})
 
             # Parse the aspects
-            aspects_data = [{'name': aspect.name, 'probability': aspect.probability, 'color': aspect.color} for aspect in aspects]
+            aspects_data = [{'name': aspect.name, 'description': aspect.description, 'passive': aspect.passive,'probability': aspect.probability, 'color': aspect.color, 'exclusive': aspect.exclusive} for aspect in aspects]
 
             return aspects_data
         except ClientResponseError as e:

@@ -6,7 +6,7 @@ class Invite(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.invite_link = "https://discord.gg/deephsp"  # Personalized invite link
-        self.image_path = "/assets/images/TinkyWinky.png"  # Path to the image used for the embed
+        self.image_path = "assets/images/TinkyWinky.png"  # Path to the image used for the embed
 
     @app_commands.command(name="invite", description="Genera un mensaje de invite admin")
     @app_commands.default_permissions(administrator=True)
@@ -25,7 +25,7 @@ class Invite(commands.Cog):
         )
 
         # Set the image for the embed
-        embed.set_thumbnail(url=f"attachment://{self.image_path}")
+        embed.set_thumbnail(url=f"attachment://TinkyWinky.png")
         try:
             
             # Open the image

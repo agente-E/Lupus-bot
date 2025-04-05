@@ -57,7 +57,7 @@ class OnMessage(commands.Cog):
             previous_level = user_data['level']
             
             # Give the rewards
-            user_data = await giver.give_rewards(data=user_data, server_booster_role=booster_role)
+            user_data = await giver.give_message_reward(data=user_data, server_booster_role=booster_role)
         
         user_data = await giver.check_level_up(data=user_data)
 
@@ -231,6 +231,6 @@ class OnMessage(commands.Cog):
         await self.check_give_rewards(message=message)
 
         await self.bot.process_commands(message)
-    
+
 async def setup(bot):
     await bot.add_cog(OnMessage(bot))
