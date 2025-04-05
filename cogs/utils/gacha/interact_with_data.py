@@ -61,17 +61,40 @@ class InteractWithDatabase(commands.Cog):
         except Exception as e:
             print(f"Ha ocurrido un error: {e}")
 
-    async def get_random_aspect(self) -> str:
+    def reroll_aspect(self, data: dict) -> dict:
         
         # Get all aspects
         aspects = self.get_aspects()
-        if not aspects:
-            raise ValueError("No aspects found in the database.")
+
+        # Extract names and probabilities
+        names = [aspect['name'] for aspect in aspects]
+        probabilities = [aspect['probability'] for aspect in aspects]
+
+        current_aspect = data['aspect']
+
+        while True:
+            selected_aspect = random.choices(names, probabilities, k=1)[0]
+
+            if selected_aspect == current_aspect:
+                continue
+
+            if selected_aspect == 'Primal Vesperian' and data.get('level', 0) < 100:
+                continue
+
+            if selected_aspect in ['Auroran', 'Lightborn'] and not data.get('mod', False):
+                continue
+
+            # If all filters are passed, we assign the new aspect
+            data['aspect'] = selected_aspect
+            return data
+
+    async def get_random_aspect(self) -> str:
+        
+        # Get all aspects
+        aspects = self.get_aspects()         
 
         # Filter out unwanted aspects for selection
-        filtered_aspects = [a for a in aspects if a['name'] not in ['Auroran', 'Lightborn']]
-        if not filtered_aspects:
-            raise ValueError("All aspects were filtered out (Auroran and Lightborn).")
+        filtered_aspects = [aspect for aspect in aspects if aspect['name'] not in ['Auroran', 'Lightborn', 'Primal Vesperian']]
 
         # Extract names and probabilities
         names = [aspect['name'] for aspect in filtered_aspects]
@@ -80,7 +103,6 @@ class InteractWithDatabase(commands.Cog):
         # Select one at random based on probability
         selected_aspect = random.choices(names, probabilities, k=1)[0]
         return selected_aspect
-
 
     '''Saves the data from a specific user to USER and INVENTORY'''
     def save_user_data(self, user_id: int, data: dict):
@@ -275,7 +297,8 @@ class InteractWithDatabase(commands.Cog):
                     "last_message": self.__to_epoch(user_data.last_message),
                     "last_gacha": self.__to_epoch(user_data.last_gacha),
                     "pity_counter": user_data.pity_counter,
-                    "unlocks": [getattr(unlock, 'name', None) for unlock in user_data.expand.get("unlocks", [])] # If there are no unlocks, just ignore it and return empty
+                    "unlocks": [getattr(unlock, 'name', None) for unlock in user_data.expand.get("unlocks", [])], # If there are no unlocks, just ignore it and return empty
+                    "mod": user_data.mod
                 }
 
             return ordered_data
