@@ -3,7 +3,7 @@ import re
 import time
 from discord.ext import commands
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
-from utils.gacha.give_rewards import GiveRewards
+from cogs.utils.gacha.give_rewards import GiveRewards
 
 class OnMessage(commands.Cog):
     def __init__(self, bot):
@@ -26,6 +26,45 @@ class OnMessage(commands.Cog):
             509808641063387147: "Liquido reproductivo",
             474625767377207326: "Es Vianix el pescador, con su caña y su sombrilla..."
         }
+
+    async def check_give_rewards(self, message:discord.Message):
+        
+        # Get cog from the bot to interact with the database
+        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
+        
+        # Get the cog from the bot to give rewards
+        giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
+
+        # Create user object
+        user_data = await database.get_user_data(user_id=int(message.author.id))
+        
+        # Gets the current time
+        current_time = time.time()
+        
+        # To check later if the user had leveled up
+        previous_level = user_data['level']
+
+        # Checks if a minute has been passed between the last message
+        if user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
+              
+            # Sets the last message sent
+            user_data['last_message'] = round(current_time)
+            
+            # Get the booster role of the server by id, if the user dosn't have it, make it null
+            booster_role = message.author.get_role(self.server_booster) if message.author.get_role(self.server_booster) else None
+            
+            # To check if a level up message has to be sent
+            previous_level = user_data['level']
+            
+            # Give the rewards
+            user_data = await giver.give_rewards(data=user_data, server_booster_role=booster_role)
+        
+        user_data = await giver.check_level_up(data=user_data)
+
+        # Checks if the user has leveled up
+        if user_data['level'] > previous_level:
+            await message.channel.send(f"¡<@{message.author.id}> ha subido al nivel {user_data['level']}!")
+        database.save_user_data(user_id=user_data['id'], data=user_data)
 
     # Checks from who is the DM
     async def checkDM(self, message):
@@ -189,21 +228,8 @@ class OnMessage(commands.Cog):
         if re.search('meow', (message.content).lower()):
             await message.channel.send("Meow")
 
-        # Get cogs from the bot
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-        giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
+        await self.check_give_rewards(message=message)
 
-        # Create user object
-        user_data = await database.get_user_data(user_id=int(message.author.id))
-
-        # Gets the current time
-        current_time = time.time()
-
-        # Checks if a minute has been passed between the last message
-        if user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
-            booster_role = message.author.get_role(self.server_booster) if message.author.get_role(self.server_booster) else None
-            giver.give_message_reward(data=user_data, server_booster_role=booster_role)
-            
         await self.bot.process_commands(message)
     
 async def setup(bot):
