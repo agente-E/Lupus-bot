@@ -39,7 +39,7 @@ class OnMessage(commands.Cog):
         user_data = await database.get_user_data(user_id=int(message.author.id))
         
         # Gets the current time
-        current_time = time.time()
+        current_time = int(time.time())
         
         # To check later if the user had leveled up
         previous_level = user_data['level']
@@ -48,7 +48,7 @@ class OnMessage(commands.Cog):
         if user_data['last_message'] == None or current_time - user_data['last_message'] >= 60:
               
             # Sets the last message sent
-            user_data['last_message'] = round(current_time)
+            user_data['last_message'] = current_time
             
             # Get the booster role of the server by id, if the user dosn't have it, make it null
             booster_role = message.author.get_role(self.server_booster) if message.author.get_role(self.server_booster) else None
