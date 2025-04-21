@@ -283,7 +283,7 @@ class InteractWithDatabase(commands.Cog):
     async def get_user_data(self, user_id: int) -> dict:
         try:
             # Request to the database to get the data of the user
-            user_data = self.__client.collection(self.__users).get_one(id=str(user_id), query_params={"expand": "aspect, unlocks"})
+            user_data = self.__client.collection(self.__users).get_one(id=str(user_id), query_params={"expand": "aspect, unlocks, title"})
 
             # Order the data and parse it to work with it better
             ordered_data = {

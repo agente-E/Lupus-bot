@@ -64,7 +64,6 @@ class Aspectos(commands.Cog):
             else:
                 image_path = f"assets/images/icons/{selection}.png"
             icon = discord.File(image_path)
-            print(aspect_data.get('passive'))
             embed.set_thumbnail(url=f"attachment://{image_path.split('/')[-1]}")
             embed.add_field(name="Descripción", value=aspect_data.get('description', "No hay descripción para este aspecto"), inline=False)
             embed.add_field(name="Pasiva", value=aspect_data.get('passive', "No hay pasiva para este aspecto"), inline=False)

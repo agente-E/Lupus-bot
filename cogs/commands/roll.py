@@ -33,10 +33,12 @@ class Roll(commands.Cog):
                 cooldown = round(self.free_cooldown / 3.33)
             case _:
                 cooldown = self.free_cooldown
-        if current_time - user_data['last_gacha'] > cooldown:
+        if current_time - user_data['last_gacha'] > cooldown: 
+            roll_rewards = [{}]
+            user_data['last_gacha'] = current_time
+            rolls = 5 if user_data['aspect'] == 'Auroran' else 3 if user_data['aspect'] == 'Gremor' else 1
+
             
-
-
         # # Get the cog from the bot to give rewards
         # giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
 

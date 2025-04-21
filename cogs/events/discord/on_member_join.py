@@ -8,8 +8,8 @@ class OnMemberJoin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.welcome_channel_id = self.bot.config.get("channels", {})["welcome"]
-        self.user_rol = self.bot.config.get("roles", {})["user"]
-        self.announcement_role = self.bot.config.get("roles", {})["announcement"]
+        self.user_role_id = self.bot.config.get("roles", {})["user"]
+        self.announcement_role_id = self.bot.config.get("roles", {})["announcement"]
 
     '''When a user joins the server'''
     @commands.Cog.listener()
