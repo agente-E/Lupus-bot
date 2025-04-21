@@ -14,7 +14,7 @@ class Comandos(commands.Cog):
         
         # Don't permit to use the bot out the main server
         checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if (await checker.check_guild(interaction=interaction) == False):
+        if await checker.check_guild(interaction=interaction) == False:
             return      
         
         avalible_commands = []

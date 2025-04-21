@@ -32,7 +32,7 @@ class Aspectos(commands.Cog):
         
         # Don't permit to use the bot out the main server
         checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if (await checker.check_guild(interaction=interaction) == False):
+        if await checker.check_guild(interaction=interaction) == False:
             return
         
         # Get cog from the bot to interact with the database

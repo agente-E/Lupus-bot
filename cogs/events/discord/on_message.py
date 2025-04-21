@@ -24,7 +24,9 @@ class OnMessage(commands.Cog):
             740294285366395001: "Me cago en tus ### hijo de la grandisima ###. Ya va siendo hora de que te ##@@/*",
             992172983017812099: "Mandame fotos de tu erizo :3",
             509808641063387147: "Liquido reproductivo",
-            474625767377207326: "Es Vianix el pescador, con su caña y su sombrilla..."
+            474625767377207326: "Es Vianix el pescador, con su caña y su sombrilla...",
+            338992922034831371: "Domado, domado domado domado",
+            509808641063387147: "Prepucaldooooo... Y SEMN"
         }
 
     async def check_give_rewards(self, message:discord.Message):
@@ -63,7 +65,7 @@ class OnMessage(commands.Cog):
 
         # Checks if the user has leveled up
         if user_data['level'] > previous_level:
-            await message.channel.send(f"¡<@{message.author.id}> ha subido al nivel {user_data['level']}!")
+            await message.channel.send(f"¡<@{message.author.id}>, has subido al nivel {user_data['level']}!")
         database.save_user_data(user_id=user_data['id'], data=user_data)
 
     # Checks from who is the DM
