@@ -3,12 +3,14 @@ from discord.ext import commands
 from discord import app_commands
 from discord.ui import Select, View
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
+from cogs.utils.discord.check_guild import CheckGuild
 
 class Aspectos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.guild_id = self.bot.config.get("guild", {})["test"]
         self.emoji_map = {
-            "Adret": "😊",
+            "Adret": "<:Adret:1363337456375693322>",
             "Auroran": "<:Auroran:1345924564659601418>",
             "Canor": "<:Canor:1342040477272375360>",
             "Capra": "<:Capra:1341356908032036925>",
@@ -19,7 +21,7 @@ class Aspectos(commands.Cog):
             "Ganymede": "<:Ganymede:1341356948636962897>",
             "Gremor": "<:Gremor:1341666668245553153>",
             "Khan": "<:Khan:1341356954722898000>",
-            "Lightborn": "😊",
+            "Lightborn": "<:Lightborn:1363337491112919200>",
             "Primal Vesperian": "<:PrimalVesperian:1346139457056800828>",
             "Tiran": "<:Tiran:1341356961001635882>",
             "Vesperian": "<:Vesperian:1341356967750402099>",
@@ -27,6 +29,11 @@ class Aspectos(commands.Cog):
 
     @app_commands.command(name="aspectos", description="Muestra los aspectos disponibles")
     async def aspectos(self, interaction: discord.Interaction):
+        
+        # Don't permit to use the bot out the main server
+        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
+        if (await checker.check_guild(interaction=interaction) == False):
+            return
         
         # Get cog from the bot to interact with the database
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase

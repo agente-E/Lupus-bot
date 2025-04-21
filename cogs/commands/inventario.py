@@ -2,14 +2,21 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
+from cogs.utils.discord.check_guild import CheckGuild
 
 class Template(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.guild_id = self.bot.config.get("guild", {})["test"]
 
     @app_commands.command(name="inventario", description="Muestra los objetos de tu inventario")
     async def inventario(self, interaction: discord.Interaction, user: discord.User = None):
         
+        # Don't permit to use the bot out the main server
+        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
+        if (await checker.check_guild(interaction=interaction) == False):
+            return
+
         # Make the interacter user as default
         if user is None:
             user = interaction.user

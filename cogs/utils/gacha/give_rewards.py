@@ -45,7 +45,6 @@ class GiveRewards(commands.Cog):
         Returns:
             data (dict): Data with rewards applied and leveled up.
         """
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
         aspect = data['aspect']
 
         booster_multiplier = 3 if server_booster_role else 1

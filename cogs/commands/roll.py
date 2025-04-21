@@ -4,11 +4,11 @@ import time
 from discord import app_commands
 from discord.ext import commands
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
+from cogs.utils.discord.check_guild import CheckGuild
 
 class Roll(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guild_id = 776247434384375818
         self.pity_threshold = self.bot.config.get("gacha_settings", {})["pity_threshold"]
         self.price_per_roll = self.bot.config.get("gacha_settings", {})["price_per_roll"]
         self.free_cooldown = self.bot.config.get("gacha_settings"), {}["free_cooldown"]
@@ -17,8 +17,8 @@ class Roll(commands.Cog):
     async def roll(self, interaction: discord.Interaction):
         
         # Don't permit to use the bot out the main server
-        if interaction.guild is None or interaction.guild.id == self.guild_id:
-            await interaction.response.send_message("No puedes usar este comando aquí. Por favor, usa un canal del servidor https://discord.com/channels/776247434384375818/1312478372357603399.")
+        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
+        if (await checker.check_guild(interaction=interaction) == False):
             return
         
         # Get cog from the bot to interact with the database

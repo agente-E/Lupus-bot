@@ -22,5 +22,9 @@
   "twitch_settings": {
     "twitch_username": "agente__E",
     "direct_url": "https://www.twitch.tv/agente__E"
+  },
+  "guild": {
+    "hispanic": 776247434384375818,
+    "test": 1300376503871344682
   }
 }

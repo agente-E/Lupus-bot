@@ -184,8 +184,7 @@ class OnMessage(commands.Cog):
             return
 
         # Get the role "Cuarentena" and delete messages from users with the role
-        quarantine_role = discord.utils.get(
-            message.guild.roles, name="Cuarentena")
+        quarantine_role = discord.utils.get(message.guild.roles, name="Cuarentena")
         if quarantine_role:
             if quarantine_role in message.author.roles:
                 await message.delete()

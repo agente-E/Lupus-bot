@@ -2,13 +2,21 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+from cogs.utils.discord.check_guild import CheckGuild
 
 class Comandos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        
+        self.guild_id = self.bot.config.get("guild", {})["test"]
+
     @app_commands.command(name="comandos", description="Lista todos los comandos disponibles")
     async def comandos(self, interaction: discord.Interaction):
+        
+        # Don't permit to use the bot out the main server
+        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
+        if (await checker.check_guild(interaction=interaction) == False):
+            return      
+        
         avalible_commands = []
 
         # Get all commands from tree
