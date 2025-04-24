@@ -104,8 +104,25 @@ class InteractWithDatabase(commands.Cog):
         selected_aspect = random.choices(names, probabilities, k=1)[0]
         return selected_aspect
 
-    '''Saves the data from a specific user to USER and INVENTORY'''
+    def __get_reward_id(self, data: list):
+        try:
+            rewards = self.get_rewards()
+            name_to_id = {reward['name']: reward['id'] for reward in rewards}
+            parsed_ids = [name_to_id[name] for name in data if name in name_to_id]
+            return parsed_ids
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return
+            
+            print("No se encontraron datos en la consulta.")
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            
+
     def save_user_data(self, user_id: int, data: dict):
+        '''Saves the data from a specific user to USER and INVENTORY'''
         try:
             # Parse the id to string
             parsed_id = str(user_id)
@@ -113,13 +130,17 @@ class InteractWithDatabase(commands.Cog):
             # Manipulate the data to save it on the database
             # Parse the id to string
             data['id'] = parsed_id
-
+            
             # Parse the aspect as id
             data['aspect'] = self.__get_aspect_id(data['aspect'])
 
             # Parse the last message and last gacha to pocketbase datetime
             data['last_message'] = self.__to_pocketbase_datetime(data['last_message'])
             data['last_gacha'] = self.__to_pocketbase_datetime(data['last_gacha'])
+            
+            # Parse the relations for unlocks
+            if data['unlocks'] != None:
+                data['unlocks'] = self.__get_reward_id(data=data['unlocks'])
             
             # Update the data from the user
             self.__client.collection(self.__users).update(id=parsed_id, body_params=data)
@@ -148,10 +169,10 @@ class InteractWithDatabase(commands.Cog):
     def get_rewards(self) -> dict:
         try:
             # Get the name and the cost from the databaese, filter by its category and if it is a shop item
-            rewards = self.__client.collection(self.__rewards).get_full_list(query_params={'fields': 'name, probability, type, value, pity_reward, unlockable'})
+            rewards = self.__client.collection(self.__rewards).get_full_list()
 
             # Parse the items
-            rewards_data = [{'name': reward.name, 'probability': reward.probability, 'type': reward.type, 'value': reward.value, 'pity_reward': reward.pity_reward, 'unlockable': reward.unlockable} for reward in rewards]
+            rewards_data = [{'id': reward.id, 'name': reward.name, 'probability': reward.probability, 'type': reward.type, 'value': reward.value, 'pity_reward': reward.pity_reward, 'unlockable': reward.unlockable} for reward in rewards]
 
             return rewards_data
         except ClientResponseError as e:
@@ -165,7 +186,7 @@ class InteractWithDatabase(commands.Cog):
             print(F"Ha ocurrido un error: {e}")
     
     '''Returns multiple rows from table ITEMS that has shop_item as True filtered by passed category'''
-    def get_shop_items(self, category: str) -> dict:
+    def     get_shop_items(self, category: str) -> dict:
         try:
             # Get the name and the cost from the databaese, filter by its category and if it is a shop item
             items = self.__client.collection(self.__items).get_full_list(query_params={'fields': 'name, category, shop_item, cost', 'sort': '-cost', 'filter': f'shop_item = true && category = "{category}"'})

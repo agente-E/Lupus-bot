@@ -24,7 +24,7 @@ class Comandos(commands.Cog):
             
             # If admin it's on the description, skip it
             if "admin" not in command.description.lower():
-                avalible_commands.append(f"/{command.name}: {command.description}")
+                avalible_commands.append(f"**/{command.name}**: {command.description}")
 
         # Create embed with command list
         embed = discord.Embed(
@@ -34,7 +34,7 @@ class Comandos(commands.Cog):
         )          
                     
         # Add all commands to the embed
-        embed.add_field(name="Comandos Slash", value="\n".join(avalible_commands), inline=False)
+        embed.add_field(name="Comandos Slash", value="\n\n".join(avalible_commands), inline=False)
     
         # Send the embed to the channel
         await interaction.response.send_message(embed=embed)

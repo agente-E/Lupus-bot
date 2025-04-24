@@ -4,11 +4,11 @@ from discord import app_commands
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
 from cogs.utils.discord.check_guild import CheckGuild
 
-class Template(commands.Cog):
+class Inventario(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @app_commands.command(name="inventario", description="Muestra los objetos de tu inventario")
+    @app_commands.command(name="inventario", description="Muestra los objetos del inventario de un usuario")
     async def inventario(self, interaction: discord.Interaction, user: discord.User = None):
         
         # Don't permit to use the bot out the main server
@@ -53,4 +53,4 @@ class Template(commands.Cog):
         await interaction.response.send_message(embed=embed, ephemeral=False)
 
 async def setup(bot):
-    await bot.add_cog(Template(bot))
+    await bot.add_cog(Inventario(bot))
