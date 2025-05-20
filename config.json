@@ -17,6 +17,7 @@
   "gacha_settings": {
     "pity_threshold": 90,
     "price_per_roll": 60,
+    "call_cooldown": 60,
     "free_cooldown": 600
   },
   "twitch_settings": {

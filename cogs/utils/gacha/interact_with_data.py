@@ -118,8 +118,7 @@ class InteractWithDatabase(commands.Cog):
             
             print("No se encontraron datos en la consulta.")
         except Exception as e:
-            print(F"Ha ocurrido un error: {e}")
-            
+            print(F"Ha ocurrido un error: {e}")            
 
     def save_user_data(self, user_id: int, data: dict):
         '''Saves the data from a specific user to USER and INVENTORY'''
@@ -281,7 +280,7 @@ class InteractWithDatabase(commands.Cog):
             print(f"Ha ocurrido un error: {e}")
 
     '''Returns a row from table USERS, level and experience'''
-    def get_user_level(self, user_id: int) -> list:
+    def get_user_level(self, user_id: int) -> dict:
         try:
             # Get the data of the user from database
             user_data = self.__client.collection(self.__users).get_one(id=str(user_id), query_params={'fields': 'level, experience'})
@@ -300,8 +299,8 @@ class InteractWithDatabase(commands.Cog):
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
 
-    '''Returns a row from table USERS formated with expand ASPECTS and REWARDS table, rewards as unlocks'''
     async def get_user_data(self, user_id: int) -> dict:
+        '''Returns a row from table USERS formated with expand ASPECTS and REWARDS table, rewards as unlocks'''
         try:
             # Request to the database to get the data of the user
             user_data = self.__client.collection(self.__users).get_one(id=str(user_id), query_params={"expand": "aspect, unlocks, title"})
@@ -319,6 +318,7 @@ class InteractWithDatabase(commands.Cog):
                     "last_gacha": self.__to_epoch(user_data.last_gacha),
                     "pity_counter": user_data.pity_counter,
                     "unlocks": [getattr(unlock, 'name', None) for unlock in user_data.expand.get("unlocks", [])], # If there are no unlocks, just ignore it and return empty
+                    "title": getattr(user_data.expand.get("title"), "name", None),
                     "mod": user_data.mod
                 }
 

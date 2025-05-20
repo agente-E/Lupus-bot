@@ -5,7 +5,6 @@ from discord import app_commands
 from discord.ui import Select, View
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
 from cogs.utils.discord.check_guild import CheckGuild
-from cogs.utils.gacha.give_rewards import GiveRewards
 
 class Tienda(commands.Cog):
     def __init__(self, bot):
@@ -13,6 +12,7 @@ class Tienda(commands.Cog):
 
     @app_commands.command(name="tienda", description="Muestra la tienda")
     async def inventario(self, interaction: discord.Interaction):
+        
         # Don't permit to use the bot out the main server
         checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
         if await checker.check_guild(interaction=interaction) == False:
@@ -36,7 +36,6 @@ class Tienda(commands.Cog):
         async def select_callback(interaction: discord.Interaction):
             selection = select_menu.values[0]
             shop_items = database.get_shop_items(category=selection)
-            print(shop_items)
             embed = discord.Embed(title="🛒 Tienda 🛒", color=discord.Color.blue())
             use_inline = len(shop_items) % 3 == 0
             counter = 0
