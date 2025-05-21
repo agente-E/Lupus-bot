@@ -9,7 +9,7 @@ from discord.ext import commands
 class InteractWithDatabase(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.__client = PocketBase('http://127.0.0.1:8090')
+        self.__client = PocketBase('http://192.168.1.132:8090')
         self.__users = 'USERS'
         self.__aspects = 'ASPECTS'
         self.__inventory = 'INVENTORY'
@@ -36,12 +36,13 @@ class InteractWithDatabase(commands.Cog):
     '''Creates a new user on the database'''
     async def __create_new_user(self, user_id: int):
         try:
+
             # Parse the id as string
             parsed_id = str(user_id)
 
             # Get the username running an async
             user = await self.bot.fetch_user(user_id)
-
+    
             # Get a random aspect by their probability
             aspect = self.__get_aspect_id(await self.get_random_aspect())
 
@@ -58,8 +59,10 @@ class InteractWithDatabase(commands.Cog):
         except ClientResponseError as e:
             print(f"Ocurrió un error con la base de datos:\n{e}")
             print(f"Código de estado: {e.status}")
+            raise
         except Exception as e:
             print(f"Ha ocurrido un error: {e}")
+            raise
 
     def reroll_aspect(self, data: dict) -> dict:
         
@@ -164,14 +167,23 @@ class InteractWithDatabase(commands.Cog):
         dt = datetime.fromtimestamp(epoch_time, tz=timezone.utc)
         return dt.isoformat()
     
-    '''Returns multiple rows from table REWARDS''' # TODO
     def get_rewards(self) -> dict:
+        '''Returns multiple rows from table REWARDS''' # TODO
         try:
             # Get the name and the cost from the databaese, filter by its category and if it is a shop item
             rewards = self.__client.collection(self.__rewards).get_full_list()
 
             # Parse the items
-            rewards_data = [{'id': reward.id, 'name': reward.name, 'probability': reward.probability, 'type': reward.type, 'value': reward.value, 'pity_reward': reward.pity_reward, 'unlockable': reward.unlockable} for reward in rewards]
+            rewards_data = [
+                {
+                    'id': reward.id,
+                    'name': reward.name,
+                    'probability': reward.probability,
+                    'type': reward.type,
+                    'value': reward.value,
+                    'pity_reward': reward.pity_reward,
+                    'unlockable': reward.unlockable
+                } for reward in rewards]
 
             return rewards_data
         except ClientResponseError as e:
@@ -211,7 +223,15 @@ class InteractWithDatabase(commands.Cog):
             aspects = self.__client.collection(self.__aspects).get_full_list(query_params={'fields': 'name, description, passive, probability, color, exclusive'})
 
             # Parse the aspects
-            aspects_data = [{'name': aspect.name, 'description': aspect.description, 'passive': aspect.passive,'probability': aspect.probability, 'color': aspect.color, 'exclusive': aspect.exclusive} for aspect in aspects]
+            aspects_data = [
+                {
+                    'name': aspect.name,
+                    'description': aspect.description,
+                    'passive': aspect.passive,
+                    'probability': aspect.probability,
+                    'color': aspect.color,
+                    'exclusive': aspect.exclusive
+                } for aspect in aspects]
 
             return aspects_data
         except ClientResponseError as e:
@@ -278,6 +298,7 @@ class InteractWithDatabase(commands.Cog):
 
         except Exception as e:
             print(f"Ha ocurrido un error: {e}")
+            raise
 
     '''Returns a row from table USERS, level and experience'''
     def get_user_level(self, user_id: int) -> dict:
@@ -296,8 +317,10 @@ class InteractWithDatabase(commands.Cog):
                 return
             
             print("No se encontraron datos en la consulta.")
+            raise
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
+            raise
 
     async def get_user_data(self, user_id: int) -> dict:
         '''Returns a row from table USERS formated with expand ASPECTS and REWARDS table, rewards as unlocks'''

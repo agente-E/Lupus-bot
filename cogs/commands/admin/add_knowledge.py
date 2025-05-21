@@ -14,7 +14,7 @@ class AddKnowledge(commands.Cog):
         # Get cog from the bot to interact with the database
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
 
-        user_data = await database.get_user_data(user_id=usuario)
+        user_data = await database.get_user_data(user_id=usuario.id)
         user_data['knowledge'] += cantidad
         database.save_user_data(user_id=user_data['id'], data=user_data)
         await interaction.response.send_message(f"{cantidad} añadidos al usuario {usuario.name}", ephemeral=True)
