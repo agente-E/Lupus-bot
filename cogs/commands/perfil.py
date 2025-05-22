@@ -11,7 +11,7 @@ class Perfil(commands.Cog):
         self.bot = bot
     
     @app_commands.command(name="perfil", description="Muestra el perfil de un usuario (notas, nivel, aspecto...)")
-    async def perfil(self, interaction: discord.Interaction, user: discord.User = None):
+    async def perfil(self, interaction: discord.Interaction, usuario: discord.User = None):
 
         # Don't permit to use the bot out the main server
         checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
@@ -19,21 +19,21 @@ class Perfil(commands.Cog):
             return
         
         # Make the interacter user as default
-        if user is None:
-            user = interaction.user
+        if usuario is None:
+            usuario = interaction.user
         
         # Get the data of the user
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
         
         # Get the data for the inventory color
-        user_data = await database.get_user_data(user_id=user.id)
+        user_data = await database.get_user_data(user_id=usuario.id)
         
         # Check if the user can level up to evade visual problems (like have more xp than needed to lvl up, visual error)
         giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
         previous_level = user_data['level']
         user_data = await giver.check_level_up(data=user_data)
         cuser_data = user_data.copy()
-        database.save_user_data(user_id=user.id, data=cuser_data)
+        database.save_user_data(user_id=usuario.id, data=cuser_data)
 
         # Checks if the user has leveled up and save the data
         if user_data['level'] > previous_level:
@@ -70,9 +70,9 @@ class Perfil(commands.Cog):
         aspects = database.get_aspects()
         aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
-        embed = discord.Embed(title=f"Perfil de {user.name}", color=color)
+        embed = discord.Embed(title=f"Perfil de {usuario.name}", color=color)
         try:
-            avatar_url = user.avatar.url
+            avatar_url = usuario.avatar.url
         except AttributeError:
             avatar_url = 'assets/images/defaultAvatar.png'
         embed.set_thumbnail(url=avatar_url)

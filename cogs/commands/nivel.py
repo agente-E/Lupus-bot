@@ -10,7 +10,7 @@ class Nivel(commands.Cog):
         self.bot = bot
     
     @app_commands.command(name="nivel", description="Muestra el nivel y la experiencia faltante para el siguiente nivel")
-    async def nivel(self, interaction: discord.Interaction, user: discord.User = None):
+    async def nivel(self, interaction: discord.Interaction, usuario: discord.User = None):
 
         # Don't permit to use the bot out the main server
         checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
@@ -18,14 +18,14 @@ class Nivel(commands.Cog):
             return
         
         # Make the interacter user as default
-        if user is None:
-            user = interaction.user
+        if usuario is None:
+            usuario = interaction.user
         
         # Get the data of the user
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
         
         # Get the data for the embed color
-        user_data = await database.get_user_data(user_id=user.id)
+        user_data = await database.get_user_data(user_id=usuario.id)
         
         # Check if the user can level up to evade visual problems (like have more xp than needed to lvl up, visual error)
         giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
@@ -46,9 +46,9 @@ class Nivel(commands.Cog):
         aspects = database.get_aspects()        
         aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
-        embed = discord.Embed(title=f"Nivel de {user.name}", colour=color)
+        embed = discord.Embed(title=f"Nivel de {usuario.name}", colour=color)
         try:
-            avatar_url = user.avatar.url
+            avatar_url = usuario.avatar.url
         except AttributeError:
             avatar_url = 'assets/images/defaultAvatar.png'
         embed.set_thumbnail(url=avatar_url)
@@ -57,8 +57,10 @@ class Nivel(commands.Cog):
         embed.add_field(name="Experiencia faltante", value=f"{xp_left} XP", inline=False)
         
         await interaction.response.send_message(embed=embed, ephemeral=False)
+        
+        # ? I need to remember why I wrote this line
         cuser_data = user_data.copy()
-        database.save_user_data(user_id=user.id, data=cuser_data)
+        database.save_user_data(user_id=usuario.id, data=cuser_data)
 
 async def setup(bot):
     await bot.add_cog(Nivel(bot))

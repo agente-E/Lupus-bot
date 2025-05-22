@@ -13,7 +13,7 @@ class AddNotes(commands.Cog):
 
         # Get cog from the bot to interact with the database
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-
+        
         user_data = await database.get_user_data(user_id=usuario.id)
         user_data['notes'] += cantidad
         database.save_user_data(user_id=user_data['id'], data=user_data)

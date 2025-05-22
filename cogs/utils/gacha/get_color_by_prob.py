@@ -14,5 +14,3 @@ def obtener_color_por_probabilidad(probabilidad):
         return discord.Color.blue()  
     else:
         return discord.Color.green()
-    
-    

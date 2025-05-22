@@ -9,7 +9,7 @@ class Inventario(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="inventario", description="Muestra los objetos del inventario de un usuario")
-    async def inventario(self, interaction: discord.Interaction, user: discord.User = None):
+    async def inventario(self, interaction: discord.Interaction, usuario: discord.User = None):
         
         # Don't permit to use the bot out the main server
         checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
@@ -17,14 +17,14 @@ class Inventario(commands.Cog):
             return
 
         # Make the interacter user as default
-        if user is None:
-            user = interaction.user
+        if usuario is None:
+            usuario = interaction.user
 
         # Get cog from the bot to interact with the database
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
 
         # Get the data for the inventory color
-        user_data = await database.get_user_data(user_id=user.id)
+        user_data = await database.get_user_data(user_id=usuario.id)
         user_aspect = user_data['aspect']
         
         # Get the colors from database
@@ -33,13 +33,13 @@ class Inventario(commands.Cog):
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
         
         # Get the inventory of the user
-        user_inventory = database.get_user_inventory(user_id=user.id)
+        user_inventory = database.get_user_inventory(user_id=usuario.id)
         embed = discord.Embed(
-            title=f"Inventario de {user.name}",
+            title=f"Inventario de {usuario.name}",
             colour=color
         )
         try:
-            avatar_url = user.avatar.url
+            avatar_url = usuario.avatar.url
         except AttributeError:
             avatar_url = 'https://images-ext-1.discordapp.net/external/9NmCvbrWMNfRMMT_d42ejZRNvj1rseRwMlyik_0Epqc/https/discord.com/assets/788f05731f8aa02e.png?format=webp&quality=lossless'
         embed.set_thumbnail(url=avatar_url)

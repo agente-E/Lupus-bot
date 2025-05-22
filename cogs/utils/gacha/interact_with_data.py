@@ -124,7 +124,7 @@ class InteractWithDatabase(commands.Cog):
             print(F"Ha ocurrido un error: {e}")            
 
     def save_user_data(self, user_id: int, data: dict):
-        '''Saves the data from a specific user to USER and INVENTORY'''
+        '''Saves the data from a specific user to INVENTORY'''
         try:
             # Parse the id to string
             parsed_id = str(user_id)
@@ -143,9 +143,69 @@ class InteractWithDatabase(commands.Cog):
             # Parse the relations for unlocks
             if data['unlocks'] != None:
                 data['unlocks'] = self.__get_reward_id(data=data['unlocks'])
-            
+
             # Update the data from the user
             self.__client.collection(self.__users).update(id=parsed_id, body_params=data)
+
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return
+            
+            print("No se encontraron datos en la consulta.")
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+
+    # def __get_item_id(self, data: list):
+    #     try:
+    #         items = self.get_items()
+    #         name_to_id = {item['name']: items['id'] for item in items}
+    #         parsed_ids = [name_to_id[name] for name in data if name in name_to_id]
+    #         return parsed_ids
+    #     except ClientResponseError as e:
+    #         if e.status != 404:
+    #             print(f"Ocurrió un error con la base de datos:\n{e}")
+    #             print(f"Código de estado: {e.status}")
+    #             return
+            
+    #         print("No se encontraron datos en la consulta.")
+    #     except Exception as e:
+    #         print(F"Ha ocurrido un error: {e}")            
+
+    def save_user_inventory(self, user_id: int, inventory_data: list):
+        '''Saves the data from a specific user to INVENTORY'''
+        try:
+            # Parse the id to string
+            parsed_id = str(user_id)
+          
+            for item in inventory_data:
+                item_id = item.get("id")
+                quantity = item.get("quantity", 0)
+            
+                existing = self.__client.collection(self.__inventory).get_full_list(
+                    query_params={
+                        "filter": f"user_id='{parsed_id}' && item_id='{item_id}'"
+                    }
+                )
+
+                if existing:
+                    inventory_record = existing[0]
+                    new_quantity = inventory_record['quantity'] + quantity
+                    if new_quantity <= 0:
+                        self.__client.collection(self.__inventory).delete(inventory_record["id"])
+                    else:
+                        self.__client.collection(self.__inventory).update(
+                        parsed_id,
+                        {"quantity": new_quantity}
+                    )
+                else:
+                    if quantity > 0:
+                        self.__client.collection(self.__inventory).create({
+                            "user_id": parsed_id,
+                            "item_id": item_id,
+                            "quantity": quantity
+                        })
 
         except ClientResponseError as e:
             if e.status != 404:
@@ -167,6 +227,33 @@ class InteractWithDatabase(commands.Cog):
         dt = datetime.fromtimestamp(epoch_time, tz=timezone.utc)
         return dt.isoformat()
     
+    # def get_items(self) -> list:
+    #     '''Returns multiple rows from table ITEMS'''
+    #     try:
+    #         # Get the name and the cost from the databaese, filter by its category and if it is a shop item
+    #         items = self.__client.collection(self.__items).get_full_list()
+
+    #         # Parse the items
+    #         items_data = [
+    #             {
+    #                 'id': item.id,
+    #                 'name': item.name,
+    #                 'category': item.category,
+    #                 'shop_item': item.shop_item,
+    #                 'cost': item.cost,
+    #             } for item in items]
+
+    #         return items_data
+    #     except ClientResponseError as e:
+    #         if e.status != 404:
+    #             print(f"Ocurrió un error con la base de datos:\n{e}")
+    #             print(f"Código de estado: {e.status}")
+    #             return
+            
+    #         print("No se encontraron datos en la consulta.")
+    #     except Exception as e:
+    #         print(F"Ha ocurrido un error: {e}")
+
     def get_rewards(self) -> dict:
         '''Returns multiple rows from table REWARDS''' # TODO
         try:
@@ -197,7 +284,7 @@ class InteractWithDatabase(commands.Cog):
             print(F"Ha ocurrido un error: {e}")
     
     '''Returns multiple rows from table ITEMS that has shop_item as True filtered by passed category'''
-    def     get_shop_items(self, category: str) -> dict:
+    def get_shop_items(self, category: str) -> dict:
         try:
             # Get the name and the cost from the databaese, filter by its category and if it is a shop item
             items = self.__client.collection(self.__items).get_full_list(query_params={'fields': 'name, category, shop_item, cost', 'sort': '-cost', 'filter': f'shop_item = true && category = "{category}"'})
@@ -264,7 +351,7 @@ class InteractWithDatabase(commands.Cog):
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
 
-    def get_user_inventory(self, user_id) -> dict:
+    def get_user_inventory(self, user_id) -> list:
         try:
             # Get the inventory of the user from database
             user_inventory = self.__client.collection(self.__inventory).get_full_list(
@@ -272,7 +359,7 @@ class InteractWithDatabase(commands.Cog):
                     "filter": f"user_id='{str(user_id)}'",
                     "expand": 'item_id'
                 }
-            )
+            )               
 
             # Sort the data by item and quantity
             sorted_inventory = sorted(
@@ -283,12 +370,13 @@ class InteractWithDatabase(commands.Cog):
             # Extract relevant attributes (item name, quantity)
             user_inventory_data = [
                 {
+                    'id': record.id if record.id else None,
                     'item': getattr(record.expand.get("item_id"), "name", None),
                     'quantity': record.quantity
                 }
                 for record in sorted_inventory
             ]
-
+            print(user_inventory_data)
             return user_inventory_data
 
         except ClientResponseError as e:
