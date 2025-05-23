@@ -7,7 +7,7 @@ class PanicBUtton(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
             
-    @app_commands.command(name="panicbutton", description="Empieza el modo cuarentena admin")
+    @app_commands.command(name="panicbutton", description="Empieza el modo cuarentena (admin)")
     @app_commands.default_permissions(administrator=True)
     async def panic(self, interaction: discord.Interaction):
         await interaction.response.defer()

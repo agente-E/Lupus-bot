@@ -7,7 +7,7 @@ class AddKnowledge(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    @app_commands.command(name="addknowledge", description="Añade una cantidad de Knowledge al usuario indicado admin")
+    @app_commands.command(name="addknowledge", description="Añade una cantidad de Knowledge al usuario indicado (admin)")
     @app_commands.default_permissions(administrator=True)
     async def add_knowledge(self, interaction:discord.Interaction, usuario: discord.Member, cantidad: int):
 

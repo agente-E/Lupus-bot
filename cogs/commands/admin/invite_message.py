@@ -8,7 +8,7 @@ class Invite(commands.Cog):
         self.invite_link = "https://discord.gg/deephsp"  # Personalized invite link
         self.image_path = "assets/images/TinkyWinky.png"  # Path to the image used for the embed
 
-    @app_commands.command(name="invite", description="Genera un mensaje de invite admin")
+    @app_commands.command(name="invite", description="Genera un mensaje de invite (admin)")
     @app_commands.default_permissions(administrator=True)
     async def invite_command(self, interaction: discord.Interaction):
         

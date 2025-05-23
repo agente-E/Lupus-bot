@@ -7,7 +7,7 @@ class AddNotes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    @app_commands.command(name="addnotes", description="Añade una cantidad de Notas al usuario indicado admin")
+    @app_commands.command(name="addnotes", description="Añade una cantidad de Notas al usuario indicado (admin)")
     @app_commands.default_permissions(administrator=True)
     async def add_notes(self, interaction:discord.Interaction, usuario: discord.Member, cantidad: int):
 
