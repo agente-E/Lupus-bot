@@ -33,11 +33,7 @@ class Perfil(commands.Cog):
         previous_level = user_data['level']
         user_data = await giver.check_level_up(data=user_data)
         cuser_data = user_data.copy()
-<<<<<<< HEAD
-        database.save_user_data(user_id=usuario.id, data=cuser_data)
-=======
-        await database.save_user_data(user_id=user.id, data=cuser_data)
->>>>>>> 3b348a4 (Major changes to interact with database, should be all complete.)
+        await database.save_user_data(user_id=usuario.id, data=cuser_data)
 
         # Checks if the user has leveled up and save the data
         if user_data['level'] > previous_level:

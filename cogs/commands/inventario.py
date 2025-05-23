@@ -33,11 +33,7 @@ class Inventario(commands.Cog):
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
         
         # Get the inventory of the user
-<<<<<<< HEAD
-        user_inventory = database.get_user_inventory(user_id=usuario.id)
-=======
-        user_inventory = await database.get_user_inventory(user_id=user.id)
->>>>>>> 3b348a4 (Major changes to interact with database, should be all complete.)
+        user_inventory = await database.get_user_inventory(user_id=usuario.id)
         embed = discord.Embed(
             title=f"Inventario de {usuario.name}",
             colour=color

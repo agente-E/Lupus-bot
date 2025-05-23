@@ -60,11 +60,7 @@ class Nivel(commands.Cog):
         
         # ? I need to remember why I wrote this line
         cuser_data = user_data.copy()
-<<<<<<< HEAD
-        database.save_user_data(user_id=usuario.id, data=cuser_data)
-=======
-        await database.save_user_data(user_id=user.id, data=cuser_data)
->>>>>>> 3b348a4 (Major changes to interact with database, should be all complete.)
+        await database.save_user_data(user_id=usuario.id, data=cuser_data)
 
 async def setup(bot):
     await bot.add_cog(Nivel(bot))
