@@ -67,7 +67,7 @@ class OnMessage(commands.Cog):
         if user_data['level'] > previous_level:
             await message.channel.send(f"¡<@{message.author.id}>, has subido al nivel {user_data['level']}!")
         cuser_data = user_data.copy()
-        database.save_user_data(user_id=user_data['id'], data=cuser_data)
+        await database.save_user_data(user_id=user_data['id'], data=cuser_data)
 
     # Checks from who is the DM
     async def checkDM(self, message):

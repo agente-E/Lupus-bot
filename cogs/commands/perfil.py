@@ -33,7 +33,11 @@ class Perfil(commands.Cog):
         previous_level = user_data['level']
         user_data = await giver.check_level_up(data=user_data)
         cuser_data = user_data.copy()
+<<<<<<< HEAD
         database.save_user_data(user_id=usuario.id, data=cuser_data)
+=======
+        await database.save_user_data(user_id=user.id, data=cuser_data)
+>>>>>>> 3b348a4 (Major changes to interact with database, should be all complete.)
 
         # Checks if the user has leveled up and save the data
         if user_data['level'] > previous_level:
@@ -48,7 +52,7 @@ class Perfil(commands.Cog):
         else:
             last_gacha_str = "Nunca"
 
-        rewards = database.get_rewards()
+        rewards = await database.get_rewards()
         unlock_names = user_data['unlocks']
 
         # Filter only Role-type rewards
@@ -67,7 +71,7 @@ class Perfil(commands.Cog):
         user_aspect = user_data['aspect']
 
         # Get the colors from database
-        aspects = database.get_aspects()
+        aspects = await database.get_aspects()
         aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
         embed = discord.Embed(title=f"Perfil de {usuario.name}", color=color)
@@ -89,7 +93,6 @@ class Perfil(commands.Cog):
         embed.add_field(name="Porcentaje de obtención", value=f'{percentage}%', inline=False)
         
         await interaction.response.send_message(embed=embed, ephemeral=False)
-
 
 async def setup(bot):
     await bot.add_cog(Perfil(bot))

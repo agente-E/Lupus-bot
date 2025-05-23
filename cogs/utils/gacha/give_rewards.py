@@ -63,6 +63,7 @@ class GiveRewards(commands.Cog):
         exp_multiplier = 2 if aspect == 'Adret' else 1
         data['experience'] += (random.randint(*exp_reward) * exp_multiplier) * booster_multiplier
         data = await self.check_level_up(data=data) 
+        
         return data
 
 async def setup(bot):

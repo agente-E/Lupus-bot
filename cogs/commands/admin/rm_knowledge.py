@@ -16,7 +16,7 @@ class RmKnowledge(commands.Cog):
 
         user_data = await database.get_user_data(user_id=usuario.id)
         user_data['knowledge'] -= cantidad
-        database.save_user_data(user_id=user_data['id'], data=user_data)
+        await database.save_user_data(user_id=user_data['id'], data=user_data)
         await interaction.response.send_message(f"{cantidad} extraidos al usuario {usuario.name}", ephemeral=True)
         try:
             if cantidad <= 1:

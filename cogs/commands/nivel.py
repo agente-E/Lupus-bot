@@ -23,7 +23,7 @@ class Nivel(commands.Cog):
         
         # Get the data of the user
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-        
+
         # Get the data for the embed color
         user_data = await database.get_user_data(user_id=usuario.id)
         
@@ -43,7 +43,7 @@ class Nivel(commands.Cog):
         xp_left = xp_req - experience
 
         user_aspect = user_data['aspect']
-        aspects = database.get_aspects()        
+        aspects = await database.get_aspects()        
         aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
         embed = discord.Embed(title=f"Nivel de {usuario.name}", colour=color)
@@ -60,7 +60,11 @@ class Nivel(commands.Cog):
         
         # ? I need to remember why I wrote this line
         cuser_data = user_data.copy()
+<<<<<<< HEAD
         database.save_user_data(user_id=usuario.id, data=cuser_data)
+=======
+        await database.save_user_data(user_id=user.id, data=cuser_data)
+>>>>>>> 3b348a4 (Major changes to interact with database, should be all complete.)
 
 async def setup(bot):
     await bot.add_cog(Nivel(bot))

@@ -35,7 +35,7 @@ class Tienda(commands.Cog):
         
         async def select_callback(interaction: discord.Interaction):
             selection = select_menu.values[0]
-            shop_items = database.get_shop_items(category=selection)
+            shop_items = await database.get_shop_items(category=selection)
             embed = discord.Embed(title="🛒 Tienda 🛒", color=discord.Color.blue())
             use_inline = len(shop_items) % 3 == 0
             counter = 0

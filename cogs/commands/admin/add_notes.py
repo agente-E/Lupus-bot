@@ -16,7 +16,9 @@ class AddNotes(commands.Cog):
         
         user_data = await database.get_user_data(user_id=usuario.id)
         user_data['notes'] += cantidad
-        database.save_user_data(user_id=user_data['id'], data=user_data)
+        await database.save_user_data(user_id=user_data['id'], data=user_data)
+        rewards = await database.get_rewards()
+        await database.remove_item_user(user_id=interaction.user.id, item_name='Cambiar Aspecto', quantity=1)
         await interaction.response.send_message(f"{cantidad} añadidos al usuario {usuario.name}", ephemeral=True)
         try:
             if cantidad <= 1:

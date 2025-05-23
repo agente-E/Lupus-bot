@@ -38,7 +38,7 @@ class Aspectos(commands.Cog):
         # Get cog from the bot to interact with the database
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
         
-        aspects = database.get_aspects()
+        aspects = await database.get_aspects()
         
         aspect_options = [
             (aspect['name'], self.emoji_map.get(aspect['name'], "❓"))
