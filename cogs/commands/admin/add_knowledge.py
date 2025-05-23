@@ -9,6 +9,7 @@ class AddKnowledge(commands.Cog):
     
     @app_commands.command(name="addknowledge", description="Añade una cantidad de Knowledge al usuario indicado (admin)")
     @app_commands.default_permissions(administrator=True)
+    @discord.app_commands.checks.has_permissions(administrator=True)
     async def add_knowledge(self, interaction:discord.Interaction, usuario: discord.Member, cantidad: int):
         # Get cog from the bot to interact with the database
         database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase

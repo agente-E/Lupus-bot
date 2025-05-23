@@ -618,7 +618,7 @@ class InteractWithDatabase(commands.Cog):
                 # If it doesn't exist, create a new entry
                 data = {
                     'user_id': str(user_id),
-                    'item_id': int(item_id),
+                    'item_id': item_id,
                     'quantity': quantity
                 }
                 print(data)

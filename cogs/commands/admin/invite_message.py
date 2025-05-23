@@ -10,6 +10,7 @@ class Invite(commands.Cog):
 
     @app_commands.command(name="invite", description="Genera un mensaje de invite (admin)")
     @app_commands.default_permissions(administrator=True)
+    @discord.app_commands.checks.has_permissions(administrator=True)
     async def invite_command(self, interaction: discord.Interaction):
         
         # Create the embed

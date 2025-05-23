@@ -8,6 +8,7 @@ class UnpanicButton(commands.Cog):
 
     @app_commands.command(name="unpanicbutton", description="Acaba el modo de cuarentena (admin)")
     @app_commands.default_permissions(administrator=True)
+    @discord.app_commands.checks.has_permissions(administrator=True)
     async def unpanic(self, interaction: discord.Interaction):
         
         await interaction.response.defer()
