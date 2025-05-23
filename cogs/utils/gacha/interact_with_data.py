@@ -11,7 +11,7 @@ class InteractWithDatabase(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.guild = self.bot.config.get("guild", {})["hispanic"]
-        self.__client = PocketBase('http://192.168.1.132:8090')
+        self.__client = PocketBase(self.bot.config["database"]["url"])
         self.__users = 'USERS'
         self.__aspects = 'ASPECTS'
         self.__inventory = 'INVENTORY'
@@ -591,39 +591,51 @@ class InteractWithDatabase(commands.Cog):
             user_id (int): The unique identifier of the user.
             item_name (str): The name of the item to add.
             quantity (int): The amount of the item to add.
+
+        Returns:
+            True if the item was added successfully, False otherwise.
         """
         try:
-            # Get the id of the item
-            item_id = await self.__get_item_id(item_name=item_name)
+            item_id = None
+            try:
+                # Get the id of the item
+                item_id = await self.__get_item_id(item_name=item_name)
+            except ValueError:
+                return False
 
             # Search if the item already exists in the INVENTORY table
             existing_item = await self.get_item_user_inventory(user_id=user_id, item_id=item_id)
             if existing_item:
-                
                 # If it exists, update the quantity
                 new_quantity = existing_item['quantity'] + quantity
                 self.__client.collection(self.__inventory).update(
                     id=existing_item['id'],
                     body_params={'quantity': new_quantity}
                 )
+                
+                return True
             else:
                 # If it doesn't exist, create a new entry
                 data = {
                     'user_id': str(user_id),
-                    'item_id': item_id,
+                    'item_id': int(item_id),
                     'quantity': quantity
                 }
+                print(data)
                 self.__client.collection(self.__inventory).create(body_params=data)
+                return True
 
         except ClientResponseError as e:
             if e.status != 404:
                 print(f"Ocurrió un error con la base de datos:\n{e}")
                 print(f"Código de estado: {e.status}")
-                return
+                return False
             
             print("No se encontraron datos en la consulta.")
+            return False
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
+            raise
 
     async def remove_item_user(self, user_id: int, item_name: str, quantity: int):        
         """

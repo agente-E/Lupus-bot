@@ -169,8 +169,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
 config.
 temp.py
 database/
 DeeWake.py
 listas.py
+
+config.json
