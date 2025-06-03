@@ -7,14 +7,14 @@ from cogs.utils.discord.check_guild import CheckGuild
 class Comandos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.checker: CheckGuild = None
         self.guild_id = self.bot.config.get("guild", {})["test"]
 
     @app_commands.command(name="comandos", description="Lista todos los comandos disponibles")
     async def comandos(self, interaction: discord.Interaction):
-        
-        # Don't permit to use the bot out the main server
-        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if await checker.check_guild(interaction=interaction) == False:
+        self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
+
+        if await self.checker.check_guild(interaction=interaction) == False:
             return      
         
         avalible_commands = []

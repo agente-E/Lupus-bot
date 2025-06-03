@@ -6,6 +6,7 @@ from pocketbase.errors import ClientResponseError
 from datetime import datetime, timezone
 from discord.ext import commands
 
+
 """Class created to interact with database, it will get and save data. Using PocketBase"""
 class InteractWithDatabase(commands.Cog):
     def __init__(self, bot):
@@ -17,6 +18,7 @@ class InteractWithDatabase(commands.Cog):
         self.__inventory = 'INVENTORY'
         self.__items = 'ITEMS'
         self.__rewards = 'REWARDS'
+        self.__history = 'HISTORY'
         self.__aspect_map = {
             "Vesperian": "vesn",
             "Tiran": "tirn",
@@ -35,8 +37,8 @@ class InteractWithDatabase(commands.Cog):
             "Adret": "adrt"
         }
 
-    '''Creates a new user on the database'''
     async def __create_new_user(self, user_id: int):
+        '''Creates a new user on the database'''
         try:
 
             # Parse the id as string
@@ -125,8 +127,46 @@ class InteractWithDatabase(commands.Cog):
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
 
+    async def save_user_history(self, user_id: int, rewards: list[str]):
+        """
+        Saves the rolls made by a user into the database.
+
+        Purpose:
+            This function is to save the history of an user on the databse, so they
+            can get known what item they got and the time.
+
+        Args:
+            user_id (int): The unique identifier of the user.
+            reward (list of str): The items that the user obtained.
+        """
+        try:
+
+            # Transform the names to ids
+            parsed_rewards = await self.__get_rewards_id(rewards)
+            
+            for reward in parsed_rewards:                
+                
+                # Do the petitions
+                self.__client.collection(self.__history).create(
+                    body_params={
+                        "user_id": str(user_id),
+                        "reward_id": reward
+                    }
+                )
+
+        except ClientResponseError as e:
+            print(f"Ocurrió un error con la base de datos:\n{e}")
+            print(f"Código de estado: {e.status}")
+            return
+            
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+
     async def save_user_data(self, user_id: int, data: dict):
-        '''Saves the data from a specific user to USER'''
+        '''
+        # DEPRECATED
+        Saves the data from a specific user to USER
+        '''
         try:
             # Parse the id to string
             parsed_id = str(user_id)
@@ -158,22 +198,6 @@ class InteractWithDatabase(commands.Cog):
             print("No se encontraron datos en la consulta.")
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
-
-    # def __get_item_id(self, data: list):
-    #     try:
-    #         items = self.get_items()
-    #         name_to_id = {item['name']: items['id'] for item in items}
-    #         parsed_ids = [name_to_id[name] for name in data if name in name_to_id]
-    #         return parsed_ids
-    #     except ClientResponseError as e:
-    #         if e.status != 404:
-    #             print(f"Ocurrió un error con la base de datos:\n{e}")
-    #             print(f"Código de estado: {e.status}")
-    #             return
-            
-    #         print("No se encontraron datos en la consulta.")
-    #     except Exception as e:
-    #         print(F"Ha ocurrido un error: {e}")            
 
     def save_user_inventory(self, user_id: int, inventory_data: list):
         '''Saves the data from a specific user to INVENTORY'''
@@ -228,54 +252,153 @@ class InteractWithDatabase(commands.Cog):
         # Convert epoch time to a datetime object in UTC
         dt = datetime.fromtimestamp(epoch_time, tz=timezone.utc)
         return dt.isoformat()
-    
+        
+    async def decrease_knowledge(self, user_id: int, knowledge: int):
+        try:
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
+                    body_params={'knowledge-': knowledge}
+                )
+            return True
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return False
+            
+            print("No se encontraron datos en la consulta.")
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            return False
+
+    async def increment_knowledge(self, user_id: int, knowledge: int):
+        try:
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
+                    body_params={'knowledge+': knowledge}
+                )
+            return True
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return False
+            
+            print("No se encontraron datos en la consulta.")
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            return False
+
     async def increment_exp(self, user_id: int, experience: int):
         try:
             self.__client.collection(self.__users).update(
                     id=str(user_id),
                     body_params={'experience+': experience}
                 )
+            return True
         except ClientResponseError as e:
             if e.status != 404:
                 print(f"Ocurrió un error con la base de datos:\n{e}")
                 print(f"Código de estado: {e.status}")
-                return
+                return False
             
             print("No se encontraron datos en la consulta.")
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
+            return False
+
+    async def decrease_notes(self, user_id: int, notes: int):
+        try:
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
+                    body_params={'notes-': notes}
+                )
+            return True
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return False
+            
+            print("No se encontraron datos en la consulta.")
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            return False
+
+    async def reset_pity_counter(self, user_id: int):
+        try:
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
+                    body_params={'pity_counter': 0}
+                )
+            return True
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return False
+            
+            print("No se encontraron datos en la consulta.")
+            return False
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            return False
+
+    async def increment_pity_counter(self, user_id: int):
+        try:
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
+                    body_params={'pity_counter+': 1}
+                )
+            return True
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return False
+            
+            print("No se encontraron datos en la consulta.")
+            return False
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            return False
 
     async def increment_notes(self, user_id: int, notes: int):
         try:
-            self.__client.collection(self.__client).update(
-                    id=user_id,
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
                     body_params={'notes+': notes}
                 )
+            return True
         except ClientResponseError as e:
             if e.status != 404:
                 print(f"Ocurrió un error con la base de datos:\n{e}")
                 print(f"Código de estado: {e.status}")
-                return
+                return False
             
             print("No se encontraron datos en la consulta.")
+            return False
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
+            return False
 
     async def increment_notes_exp(self, user_id: int, notes: int, experience: int):
         try:
-            self.__client.collection(self.__client).update(
-                    id=user_id,
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
                     body_params={'notes+': notes, 'experience+': experience}
                 )
         except ClientResponseError as e:
             if e.status != 404:
                 print(f"Ocurrió un error con la base de datos:\n{e}")
                 print(f"Código de estado: {e.status}")
-                return
+                return True
             
             print("No se encontraron datos en la consulta.")
+            return False
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
+            return False
 
     async def get_rewards(self) -> list:
         '''Returns multiple rows from table REWARDS''' # TODO
@@ -306,6 +429,7 @@ class InteractWithDatabase(commands.Cog):
             print("No se encontraron datos en la consulta.")
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
+            raise
     
     async def get_items(self) -> list:
         '''Returns multiple rows from table ITEMS'''
@@ -410,10 +534,9 @@ class InteractWithDatabase(commands.Cog):
 
         Args:
             user_id (int): The unique identifier of the user.
-            item_id (str): The unique identifier of the item to look up.
 
         Returns:
-            dict: (If not exists, returns None) Returns a dictionary representing the inventory record if found, with:
+            list: Returns a list of dictionaries representing the inventory records if found (else returns None), with:
                 - id (str): The unique ID of the inventory record.
                 - item (str): The item ID.
                 - quantity (int): The quantity of the item.
@@ -442,17 +565,70 @@ class InteractWithDatabase(commands.Cog):
                 }
                 for record in sorted_inventory
             ]
-            print(user_inventory_data)
             return user_inventory_data
 
         except ClientResponseError as e:
-            print(f"Ocurrió un error con la base de datos:\n{e}")
-            print(f"Código de estado: {e.status}")
-            return
-
-        except Exception as e:
-            print(f"Ha ocurrido un error: {e}")
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return
+            
+            print("No se encontraron datos en la consulta.")
             raise
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            raise
+
+
+    async def get_user_history(self, user_id) -> list:
+        """
+        Retrieves a specific item from a user's gacha history, if it exists.
+
+        Purpose:
+            This function is used to check what's the history of the user rolls.
+            To list it in command.
+
+        Args:
+            user_id (int): The unique identifier of the user.
+
+        Returns:
+            list: Returns a list of dictionaries representing the inventory records if found (else returns None), with:
+                - id (str): The unique ID of the inventory record.
+                - item (str): The item ID.
+                - created (int): When it was obtained.
+        """
+        try:
+            # Get the history of the user from database
+            user_history = self.__client.collection(self.__history).get_full_list(
+                query_params={
+                    "filter": f"user_id='{str(user_id)}'",
+                    "expand": 'reward_id'
+                }
+            )               
+
+            # Extract relevant attributes (The user id, the reward and when it was obtained)
+            user_history_data = [
+                {
+                    'id': record.id if record.id else None,
+                    'reward': getattr(record.expand.get("reward_id"), "name", None),
+                    'created': self.__to_epoch(str(record.created))
+                }
+                for record in user_history
+            ]
+
+            return user_history_data
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return
+            
+            print("No se encontraron datos en la consulta.")
+            raise
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            raise
+
 
     async def get_item_user_inventory(self, user_id, item_id: str) -> dict:
         """
@@ -469,7 +645,7 @@ class InteractWithDatabase(commands.Cog):
         Returns:
             dict: (If not exists, returns None) A dictionary representing the inventory record if found, containing:
                 - id (str): The inventory record ID.
-                - item (str): The item ID.
+                - item (str): The item name.
                 - quantity (int): The quantity of the item.
         """
         try:
@@ -491,15 +667,19 @@ class InteractWithDatabase(commands.Cog):
                 'item': getattr(record.expand.get("item_id"), "name", None),
                 'quantity': record.quantity
             }
-
+            
         except ClientResponseError as e:
-            print(f"Ocurrió un error con la base de datos:\n{e}")
-            print(f"Código de estado: {e.status}")
-            return
-
-        except Exception as e:
-            print(f"Ha ocurrido un error: {e}")
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return
+            
+            print("No se encontraron datos en la consulta.")
             raise
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            raise
+
 
     async def get_user_unlocks(self, user_id: int):
         try:
@@ -599,7 +779,7 @@ class InteractWithDatabase(commands.Cog):
             item_id = None
             try:
                 # Get the id of the item
-                item_id = await self.__get_item_id(item_name=item_name)
+                item_id = await self.get_item_id(item_name=item_name)
             except ValueError:
                 return False
 
@@ -621,7 +801,6 @@ class InteractWithDatabase(commands.Cog):
                     'item_id': item_id,
                     'quantity': quantity
                 }
-                print(data)
                 self.__client.collection(self.__inventory).create(body_params=data)
                 return True
 
@@ -653,14 +832,12 @@ class InteractWithDatabase(commands.Cog):
         """
         try:
             # Get the id of the item
-            item_id = await self.__get_item_id(item_name=item_name)
+            item_id = await self.get_item_id(item_name=item_name)
 
             # Search if the item already exists in the INVENTORY table
             existing_item = await self.get_item_user_inventory(user_id=user_id, item_id=item_id)
             if existing_item:
                 new_quantity = existing_item['quantity'] - quantity
-                print(existing_item)
-                print(new_quantity)
                 # If it exists, update the quantity
                 # In case that reaches zero, delete the row
                 if new_quantity <= 0:
@@ -673,17 +850,17 @@ class InteractWithDatabase(commands.Cog):
                         id=existing_item['id'],
                         body_params={'quantity': new_quantity}
                     )
-
+                return True
         except ClientResponseError as e:
             if e.status != 404:
                 print(f"Ocurrió un error con la base de datos:\n{e}")
                 print(f"Código de estado: {e.status}")
-                return
+                return False
             
             print("No se encontraron datos en la consulta.")
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
-
+            return False
 
     async def __get_reward_id(self, reward_name: str) -> str:
         try:
@@ -694,7 +871,7 @@ class InteractWithDatabase(commands.Cog):
             raise ValueError(f"Item '{reward_name}' no encontrado.")
 
 
-    async def __get_item_id(self, item_name: str) -> str:
+    async def get_item_id(self, item_name: str) -> str:
         """
         Gets the ID of an item based on its name.
 
@@ -762,6 +939,24 @@ class InteractWithDatabase(commands.Cog):
         except Exception as e:
             print(F"Ha ocurrido un error: {e}")
             raise
+
+    async def update_last_gacha(self, user_id: int, current_time: int):
+        try:
+            self.__client.collection(self.__users).update(
+                    id=str(user_id),
+                    body_params={'last_gacha': self.__to_pocketbase_datetime(current_time)}
+                )
+            return True
+        except ClientResponseError as e:
+            if e.status != 404:
+                print(f"Ocurrió un error con la base de datos:\n{e}")
+                print(f"Código de estado: {e.status}")
+                return False
+            
+            print("No se encontraron datos en la consulta.")
+        except Exception as e:
+            print(F"Ha ocurrido un error: {e}")
+            return False
 
     async def get_user_data(self, user_id: int) -> dict:
         """

@@ -9,31 +9,30 @@ from cogs.utils.gacha.give_rewards import GiveRewards
 class Perfil(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+        self.database: InteractWithDatabase = None
+        self.checker: CheckGuild = None
+
     @app_commands.command(name="perfil", description="Muestra el perfil de un usuario (notas, nivel, aspecto...)")
     async def perfil(self, interaction: discord.Interaction, usuario: discord.User = None):
+        self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
+        self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
 
-        # Don't permit to use the bot out the main server
-        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if await checker.check_guild(interaction=interaction) == False:
+        if await self.checker.check_guild(interaction=interaction) == False:
             return
         
         # Make the interacter user as default
         if usuario is None:
             usuario = interaction.user
-        
-        # Get the data of the user
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-        
+               
         # Get the data for the inventory color
-        user_data = await database.get_user_data(user_id=usuario.id)
+        user_data = await self.database.get_user_data(user_id=usuario.id)
         
         # Check if the user can level up to evade visual problems (like have more xp than needed to lvl up, visual error)
         giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
         previous_level = user_data['level']
         user_data = await giver.check_level_up(data=user_data)
         cuser_data = user_data.copy()
-        await database.save_user_data(user_id=usuario.id, data=cuser_data)
+        await self.database.save_user_data(user_id=usuario.id, data=cuser_data)
 
         # Checks if the user has leveled up and save the data
         if user_data['level'] > previous_level:
@@ -48,7 +47,7 @@ class Perfil(commands.Cog):
         else:
             last_gacha_str = "Nunca"
 
-        rewards = await database.get_rewards()
+        rewards = await self.database.get_rewards()
         unlock_names = user_data['unlocks']
 
         # Filter only Role-type rewards
@@ -67,7 +66,7 @@ class Perfil(commands.Cog):
         user_aspect = user_data['aspect']
 
         # Get the colors from database
-        aspects = await database.get_aspects()
+        aspects = await self.database.get_aspects()
         aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
         embed = discord.Embed(title=f"Perfil de {usuario.name}", color=color)

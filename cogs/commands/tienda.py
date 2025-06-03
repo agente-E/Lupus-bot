@@ -9,17 +9,18 @@ from cogs.utils.discord.check_guild import CheckGuild
 class Tienda(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.database: InteractWithDatabase = None
+        self.checker: CheckGuild = None
 
     @app_commands.command(name="tienda", description="Muestra la tienda")
     async def inventario(self, interaction: discord.Interaction):
-        
-        # Don't permit to use the bot out the main server
-        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if await checker.check_guild(interaction=interaction) == False:
+        self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
+        self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
+
+        if await self.checker.check_guild(interaction=interaction) == False:
             return
                 
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-        user_data = await database.get_user_data(user_id=interaction.user.id)
+        user_data = await self.database.get_user_data(user_id=interaction.user.id)
         aspect = user_data['aspect']
 
         embed = discord.Embed(title="🛒 Tienda 🛒", description="Selecciona una categoría.", color=discord.Color.green())
@@ -35,7 +36,7 @@ class Tienda(commands.Cog):
         
         async def select_callback(interaction: discord.Interaction):
             selection = select_menu.values[0]
-            shop_items = await database.get_shop_items(category=selection)
+            shop_items = await self.database.get_shop_items(category=selection)
             embed = discord.Embed(title="🛒 Tienda 🛒", color=discord.Color.blue())
             use_inline = len(shop_items) % 3 == 0
             counter = 0

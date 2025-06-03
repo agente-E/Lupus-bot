@@ -8,6 +8,8 @@ from cogs.utils.gacha.give_rewards import GiveRewards
 class OnMessage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.database: InteractWithDatabase = None
+        self.giver: GiveRewards = None
         self.url_pattern = r'https?://(?:www\.)?\S+'
         self.updates_channel = self.bot.config.get("channels", {})["deepwoken_updates"]
         self.updates_channel_obj = self.bot.get_channel(self.updates_channel)
@@ -30,15 +32,10 @@ class OnMessage(commands.Cog):
         }
 
     async def check_give_rewards(self, message:discord.Message):
-        
-        # Get cog from the bot to interact with the database
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-
-        # Get the cog from the bot to give rewards
-        giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
-
+        self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
+        self.giver = self.bot.get_cog("GiveRewards") if self.giver is None else self.giver
         # Create user object
-        user_data = await database.get_user_data(user_id=int(message.author.id))
+        user_data = await self.database.get_user_data(user_id=int(message.author.id))
         
         # Gets the current time
         current_time = int(time.time())
@@ -59,15 +56,15 @@ class OnMessage(commands.Cog):
             previous_level = user_data['level']
             
             # Give the rewards
-            user_data = await giver.give_message_reward(data=user_data, server_booster_role=booster_role)
+            user_data = await self.giver.give_message_reward(data=user_data, server_booster_role=booster_role)
         
-        user_data = await giver.check_level_up(data=user_data)
+        user_data = await self.giver.check_level_up(data=user_data)
 
         # Checks if the user has leveled up
         if user_data['level'] > previous_level:
             await message.channel.send(f"¡<@{message.author.id}>, has subido al nivel {user_data['level']}!")
         cuser_data = user_data.copy()
-        await database.save_user_data(user_id=user_data['id'], data=cuser_data)
+        await self.database.save_user_data(user_id=user_data['id'], data=cuser_data)
 
     # Checks from who is the DM
     async def checkDM(self, message):

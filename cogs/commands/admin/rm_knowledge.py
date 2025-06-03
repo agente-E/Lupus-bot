@@ -6,24 +6,31 @@ from cogs.utils.gacha.interact_with_data import InteractWithDatabase
 class RmKnowledge(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+        self.database: InteractWithDatabase = None
+
     @app_commands.command(name="rmknowledge", description="Elimina una cantidad de Knowledge al usuario indicado (admin)")
     @app_commands.default_permissions(administrator=True)
     @discord.app_commands.checks.has_permissions(administrator=True)
     async def rm_knowledge(self, interaction:discord.Interaction, usuario: discord.Member, cantidad: int):
+        self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
+        await interaction.response.defer(thinking=True, ephemeral=True)
 
-        # Get cog from the bot to interact with the database
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
+        if cantidad <= 0:
+            await interaction.followup.send("No puedes poner un número inferior a 1.", ephemeral=True)
+            return
 
-        user_data = await database.get_user_data(user_id=usuario.id)
-        user_data['knowledge'] -= cantidad
-        await database.save_user_data(user_id=user_data['id'], data=user_data)
-        await interaction.response.send_message(f"{cantidad} extraidos al usuario {usuario.name}", ephemeral=True)
+        if not await self.database.decrease_knowledge(usuario.id, cantidad):
+            await interaction.followup.send(f"Error eliminando knowledge (mira la consola).", ephemeral=True)
+            return
+
+        await interaction.followup.send(f"{cantidad}<:knowledge:1338469359906979874> extraidos al usuario {usuario.name}", ephemeral=True)
         try:
+            message = None
             if cantidad <= 1:
-                await usuario.send(f"Se te han quitado {cantidad} <:knowledge:1338469359906979874>")
+                message = f"Se te han quitado {cantidad}<:knowledge:1338469359906979874>"
             else:
-                await usuario.send(f"Se te han quitado {cantidad} <:knowledge:1338469359906979874>")
+                message = f"Se te han quitado {cantidad}<:knowledge:1338469359906979874>"
+            await usuario.send(message)
         except discord.Forbidden:
             print(f"No se pudo enviar DM a {usuario.name}.")
 

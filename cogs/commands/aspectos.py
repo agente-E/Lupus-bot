@@ -8,7 +8,8 @@ from cogs.utils.discord.check_guild import CheckGuild
 class Aspectos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guild_id = self.bot.config.get("guild", {})["test"]
+        self.database: InteractWithDatabase = None
+        self.checker: CheckGuild = None
         self.emoji_map = {
             "Adret": "<:Adret:1363337456375693322>",
             "Auroran": "<:Auroran:1345924564659601418>",
@@ -29,16 +30,14 @@ class Aspectos(commands.Cog):
 
     @app_commands.command(name="aspectos", description="Muestra los aspectos disponibles")
     async def aspectos(self, interaction: discord.Interaction):
+        self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
+        self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
         
         # Don't permit to use the bot out the main server
-        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if await checker.check_guild(interaction=interaction) == False:
+        if await self.checker.check_guild(interaction=interaction) == False:
             return
         
-        # Get cog from the bot to interact with the database
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-        
-        aspects = await database.get_aspects()
+        aspects = await self.database.get_aspects()
         
         aspect_options = [
             (aspect['name'], self.emoji_map.get(aspect['name'], "❓"))

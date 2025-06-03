@@ -8,24 +8,23 @@ from cogs.utils.gacha.give_rewards import GiveRewards
 class Nivel(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-    
+        self.database: InteractWithDatabase = None
+        self.checker: CheckGuild = None
+
     @app_commands.command(name="nivel", description="Muestra el nivel y la experiencia faltante para el siguiente nivel")
     async def nivel(self, interaction: discord.Interaction, usuario: discord.User = None):
+        self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
+        self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
 
-        # Don't permit to use the bot out the main server
-        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if await checker.check_guild(interaction=interaction) == False:
+        if await self.checker.check_guild(interaction=interaction) == False:
             return
         
         # Make the interacter user as default
         if usuario is None:
             usuario = interaction.user
         
-        # Get the data of the user
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-
         # Get the data for the embed color
-        user_data = await database.get_user_data(user_id=usuario.id)
+        user_data = await self.database.get_user_data(user_id=usuario.id)
         
         # Check if the user can level up to evade visual problems (like have more xp than needed to lvl up, visual error)
         giver = self.bot.get_cog("GiveRewards") # type: GiveRewards
@@ -43,7 +42,7 @@ class Nivel(commands.Cog):
         xp_left = xp_req - experience
 
         user_aspect = user_data['aspect']
-        aspects = await database.get_aspects()        
+        aspects = await self.database.get_aspects()        
         aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
         embed = discord.Embed(title=f"Nivel de {usuario.name}", colour=color)
@@ -60,7 +59,7 @@ class Nivel(commands.Cog):
         
         # ? I need to remember why I wrote this line
         cuser_data = user_data.copy()
-        await database.save_user_data(user_id=usuario.id, data=cuser_data)
+        await self.database.save_user_data(user_id=usuario.id, data=cuser_data)
 
 async def setup(bot):
     await bot.add_cog(Nivel(bot))

@@ -7,33 +7,33 @@ from cogs.utils.discord.check_guild import CheckGuild
 class Inventario(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.database: InteractWithDatabase = None
+        self.checker: CheckGuild = None
 
     @app_commands.command(name="inventario", description="Muestra los objetos del inventario de un usuario")
     async def inventario(self, interaction: discord.Interaction, usuario: discord.User = None):
-        
+        self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
+        self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
+
         # Don't permit to use the bot out the main server
-        checker = self.bot.get_cog("CheckGuild") # type: CheckGuild
-        if await checker.check_guild(interaction=interaction) == False:
+        if await self.checker.check_guild(interaction=interaction) == False:
             return
 
         # Make the interacter user as default
         if usuario is None:
             usuario = interaction.user
 
-        # Get cog from the bot to interact with the database
-        database = self.bot.get_cog("InteractWithDatabase") # type: InteractWithDatabase
-
         # Get the data for the inventory color
-        user_data = await database.get_user_data(user_id=usuario.id)
+        user_data = await self.database.get_user_data(user_id=usuario.id)
         user_aspect = user_data['aspect']
         
         # Get the colors from database
-        aspects = await database.get_aspects()
+        aspects = await self.database.get_aspects()
         aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
         color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
         
         # Get the inventory of the user
-        user_inventory = await database.get_user_inventory(user_id=usuario.id)
+        user_inventory = await self.database.get_user_inventory(user_id=usuario.id)
         embed = discord.Embed(
             title=f"Inventario de {usuario.name}",
             colour=color
