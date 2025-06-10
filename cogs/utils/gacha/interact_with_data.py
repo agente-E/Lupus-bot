@@ -145,7 +145,6 @@ class InteractWithDatabase(commands.Cog):
             parsed_rewards = await self.__get_rewards_id(rewards)
             
             for reward in parsed_rewards:                
-                
                 # Do the petitions
                 self.__client.collection(self.__history).create(
                     body_params={
@@ -416,7 +415,8 @@ class InteractWithDatabase(commands.Cog):
                     'value': reward.value,
                     'unlockable': reward.unlockable,
                     'item': getattr(reward.expand.get("item"), "name", None),
-                    'pity_reward': reward.pity_reward
+                    'pity_reward': reward.pity_reward,
+                    'emoji': reward.emoji
                 } for reward in rewards]
 
             return rewards_data
