@@ -11,6 +11,7 @@ class Inventario(commands.Cog):
         self.checker: CheckGuild = None
 
     @app_commands.command(name="inventario", description="Muestra los objetos del inventario de un usuario")
+    @app_commands.describe(usuario="Usuario del que ver el inventario (opcional)")
     async def inventario(self, interaction: discord.Interaction, usuario: discord.User = None):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker

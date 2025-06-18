@@ -13,6 +13,7 @@ class Perfil(commands.Cog):
         self.checker: CheckGuild = None
 
     @app_commands.command(name="perfil", description="Muestra el perfil de un usuario (notas, nivel, aspecto...)")
+    @app_commands.describe(usuario="Usuario del que ver el perfil (opcional)")
     async def perfil(self, interaction: discord.Interaction, usuario: discord.User = None):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker

@@ -9,6 +9,7 @@ class GiveRewards(commands.Cog):
 
     async def check_level_up(self, data: dict) -> dict:
         """
+        # DEPRECATED
         Levels up the level of the user by their remaining exp.
 
         Arguments:
@@ -35,6 +36,7 @@ class GiveRewards(commands.Cog):
 
     async def give_message_reward(self, data: dict, server_booster_role = None) -> dict:
         """
+        # Deprecated
         Gives a random amount of exp and notes, with server boost role gives more.
 
         Arguments:

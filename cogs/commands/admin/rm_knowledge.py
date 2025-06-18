@@ -11,6 +11,8 @@ class RmKnowledge(commands.Cog):
     @app_commands.command(name="rmknowledge", description="Elimina una cantidad de Knowledge al usuario indicado (admin)")
     @app_commands.default_permissions(administrator=True)
     @discord.app_commands.checks.has_permissions(administrator=True)
+    @app_commands.describe(usuario="Usuario al que quitar Knowledge")
+    @app_commands.describe(cantidad="Número de Knowledge a quitar")
     async def rm_knowledge(self, interaction:discord.Interaction, usuario: discord.Member, cantidad: int):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         await interaction.response.defer(thinking=True, ephemeral=True)

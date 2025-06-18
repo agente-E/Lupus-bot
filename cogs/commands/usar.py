@@ -15,7 +15,8 @@ class Usar(commands.Cog):
 
     @app_commands.command(name="usar", description="Usa un ítem de tu inventario")
     @app_commands.checks.cooldown(1, 10.0) 
-    async def command(self, interaction: discord.Interaction, item: str):
+    @app_commands.describe(item="Nombre del item a usar")
+    async def usar(self, interaction: discord.Interaction, item: str):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
 
@@ -41,7 +42,7 @@ class Usar(commands.Cog):
             print(f"Error en usar comando: {e}")
             await interaction.followup.send('El item indicado no existe.')
 
-    @command.autocomplete('item')
+    @usar.autocomplete('item')
     async def item_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
 
@@ -143,7 +144,7 @@ class Usar(commands.Cog):
         except:
             pass
         
-    @command.error
+    @usar.error
     async def command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         if isinstance(error, app_commands.CommandOnCooldown):
             await interaction.response.send_message(

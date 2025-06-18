@@ -629,7 +629,6 @@ class InteractWithDatabase(commands.Cog):
             print(F"Ha ocurrido un error: {e}")
             raise
 
-
     async def get_item_user_inventory(self, user_id, item_id: str) -> dict:
         """
         Retrieves a specific item from a user's inventory, if it exists.

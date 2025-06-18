@@ -31,9 +31,8 @@ class Tienda(commands.Cog):
         options=[
             discord.SelectOption(label="Perfil", description="Objetos de perfil", emoji="📄"),
             # discord.SelectOption(label="", description="", emoji="") for more options in future
-        ]
-    )
-        
+        ])
+
         async def select_callback(interaction: discord.Interaction):
             selection = select_menu.values[0]
             shop_items = await self.database.get_shop_items(category=selection)

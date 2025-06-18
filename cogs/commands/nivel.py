@@ -12,6 +12,7 @@ class Nivel(commands.Cog):
         self.checker: CheckGuild = None
 
     @app_commands.command(name="nivel", description="Muestra el nivel y la experiencia faltante para el siguiente nivel")
+    @app_commands.describe(usuario="Usuario del que ver el nivel (opcional)")
     async def nivel(self, interaction: discord.Interaction, usuario: discord.User = None):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker

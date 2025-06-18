@@ -12,6 +12,9 @@ class AddItems(commands.Cog):
     @app_commands.command(name="additems", description="Añade items a un usuario (admin)")
     @app_commands.default_permissions(administrator=True)
     @discord.app_commands.checks.has_permissions(administrator=True)
+    @app_commands.describe(usuario="Usuario al que añadir items")
+    @app_commands.describe(item="Nombre del item a añadir")
+    @app_commands.describe(cantidad="Número de items a añadir")
     async def command(self, interaction: discord.Interaction, usuario: discord.Member, item: str, cantidad: int):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         await interaction.response.defer(thinking=True, ephemeral=True)

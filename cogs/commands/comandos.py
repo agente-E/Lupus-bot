@@ -1,4 +1,4 @@
-# TODO rework, by views like aspects or shop
+    # TODO rework, by views like aspects or shop
 import discord
 from discord import app_commands
 from discord.ext import commands

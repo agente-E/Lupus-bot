@@ -8,12 +8,13 @@ from discord.ui import View, Button
 from discord.ext import commands
 from cogs.utils.gacha.interact_with_data import InteractWithDatabase
 from cogs.utils.discord.check_guild import CheckGuild
-
+from cogs.utils.gacha.give_rewards import GiveRewards
 class Roll(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.database: InteractWithDatabase = None
         self.checker: CheckGuild = None
+        self.giver: GiveRewards = None
         self.pity_threshold = self.bot.config.get("gacha_settings", {})["pity_threshold"]
         self.price_per_roll = self.bot.config.get("gacha_settings", {})["price_per_roll"]
         self.free_cooldown = self.bot.config.get("gacha_settings", {})["free_cooldown"]
@@ -22,6 +23,7 @@ class Roll(commands.Cog):
     async def roll(self, interaction: discord.Interaction):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
+        self.giver = self.bot.get_cog("GiveRewards") if self.giver is None else self.giver
 
         # Don't permit to use the bot out the main server
         if await self.checker.check_guild(interaction=interaction) == False:
@@ -66,7 +68,7 @@ class Roll(commands.Cog):
             knowledge_added += knowledge_to_add * rolls
             await self.database.increment_knowledge(interaction.user.id, knowledge_to_add)
                 
-            # ! Add logic to level up
+            # ! Add logic to level up (TODO)
 
             # Give the rewards to the user
             await self.give_rewards(rewards=roll_rewards, interaction=interaction)            
@@ -152,8 +154,8 @@ class Roll(commands.Cog):
                 roll_rewards = await self.do_roll(user_data, pity_threshold, 1)
                 knowledge_added += knowledge_to_add * 1
                 await self.database.increment_knowledge(interaction.user.id, knowledge_to_add)
-                
-                # ! Add logic to level up
+                    
+                # ! Add logic to level up (TODO)
 
                 # Give the rewards to the user
                 await self.give_rewards(rewards=roll_rewards, interaction=interaction)                
@@ -211,8 +213,8 @@ class Roll(commands.Cog):
                 roll_rewards = await self.do_roll(user_data, pity_threshold, 10)
                 knowledge_added += knowledge_to_add * 10
                 await self.database.increment_knowledge(interaction.user.id, knowledge_to_add)
-                
-                # ! Add logic to level up
+
+                # ! Add logic to level up (TODO)
 
                 # Give the rewards to the user
                 await self.give_rewards(rewards=roll_rewards, interaction=interaction)

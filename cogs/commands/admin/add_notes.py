@@ -11,6 +11,8 @@ class AddNotes(commands.Cog):
     @app_commands.command(name="addnotes", description="Añade una cantidad de Notas al usuario indicado (admin)")
     @app_commands.default_permissions(administrator=True)
     @discord.app_commands.checks.has_permissions(administrator=True)
+    @app_commands.describe(usuario="Usuario al que añadir Notes")
+    @app_commands.describe(cantidad="Número de Notes a añadir")
     async def add_notes(self, interaction:discord.Interaction, usuario: discord.Member, cantidad: int):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         await interaction.response.defer(thinking=True, ephemeral=True)
