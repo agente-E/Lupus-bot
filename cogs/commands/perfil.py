@@ -44,7 +44,7 @@ class Perfil(commands.Cog):
         if last_gacha_timestamp > 0:
             
             # Create relative discord timestamp
-            last_gacha_str = f"<t:{int(last_gacha_timestamp)}:R>"  # Formato relativo ("hace X minutos")
+            last_gacha_str = f"<t:{int(last_gacha_timestamp)}:R>"
         else:
             last_gacha_str = "Nunca"
 

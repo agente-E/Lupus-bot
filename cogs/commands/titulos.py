@@ -1,113 +1,147 @@
 import discord
+import discord
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Button
 from datetime import datetime
-import math
+from cogs.utils.gacha.interact_with_data import InteractWithDatabase
+from cogs.utils.discord.check_guild import CheckGuild
+from typing import Callable, Optional
 
-ITEMS_PER_PAGE = 10
+class Pagination(discord.ui.View):
+    def __init__(self, interaction: discord.Interaction, get_page: Callable):
+        self.interaction = interaction
+        self.get_page = get_page
+        self.total_pages: Optional[int] = None
+        self.index = 1
+        super().__init__(timeout=100)
 
-class RolePaginator(View):
-    def __init__(self, user_data, interaction_user, timeout=60):
-        super().__init__(timeout=timeout)
-        self.user_data = sorted(user_data, key=lambda x: x["probability"])  # menor prob = más raro
-        self.current_page = 0
-        self.total_pages = math.ceil(len(self.user_data) / ITEMS_PER_PAGE)
-        self.interaction_user = interaction_user
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user == self.interaction.user:
+            return True
+        else:
+            embed = discord.Embed(
+                description=f"Solo el autor del comando puede realizar esta acción.",
+                color=discord.Color.red()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            return False
 
-        self.prev_button = Button(label="⏪", style=discord.ButtonStyle.primary)
-        self.next_button = Button(label="⏩", style=discord.ButtonStyle.primary)
-        self.prev_button.callback = self.go_prev
-        self.next_button.callback = self.go_next
-        self.add_item(self.prev_button)
-        self.add_item(self.next_button)
+    async def navegate(self):
+        embed, self.total_pages = await self.get_page(self.index)
+        if self.total_pages == 1:
+            await self.interaction.response.send_message(embed=embed)
+        elif self.total_pages > 1:
+            self.update_buttons()
+            await self.interaction.response.send_message(embed=embed, view=self)
 
-    def get_page_items(self):
-        start = self.current_page * ITEMS_PER_PAGE
-        end = start + ITEMS_PER_PAGE
-        return self.user_data[start:end]
+    async def edit_page(self, interaction: discord.Interaction):
+        embed, self.total_pages = await self.get_page(self.index)
+        self.update_buttons()
+        await interaction.response.edit_message(embed=embed, view=self)
 
-    def get_embed(self):
-        embed = discord.Embed(
-            title="🎖 Roles desbloqueados",
-            description=f"Página {self.current_page + 1} de {self.total_pages}",
-            color=discord.Color.gold()
-        )
-        roles_on_page = self.get_page_items()
+    def update_buttons(self):
+        if self.index > self.total_pages // 2:
+            self.children[2].emoji = "⏮️"
+        else:
+            self.children[2].emoji = "⏭️"
+        self.children[0].disabled = self.index == 1
+        self.children[1].disabled = self.index == self.total_pages
 
-        for role in roles_on_page:
-            name = role["name"]
-            probability = role["probability"]
-            obtained = datetime.fromtimestamp(role["created"]).strftime("%d/%m/%Y %H:%M")
-            embed.add_field(name=name, value=f"🎯 Prob: `{probability:.2f}%`\n📅 Obtenido: {obtained}", inline=False)
+    @discord.ui.button(emoji="◀️", style=discord.ButtonStyle.blurple)
+    async def previous(self, interaction: discord.Interaction, button: discord.Button):
+        self.index -= 1
+        await self.edit_page(interaction)
 
-        return embed
+    @discord.ui.button(emoji="▶️", style=discord.ButtonStyle.blurple)
+    async def next(self, interaction: discord.Interaction, button: discord.Button):
+        self.index += 1
+        await self.edit_page(interaction)
 
-    async def update_message(self, interaction):
-        await interaction.response.edit_message(embed=self.get_embed(), view=self)
+    @discord.ui.button(emoji="⏭️", style=discord.ButtonStyle.blurple)
+    async def end(self, interaction: discord.Interaction, button: discord.Button):
+        if self.index <= self.total_pages//2:
+            self.index = self.total_pages
+        else:
+            self.index = 1
+        await self.edit_page(interaction)
 
-    async def go_prev(self, interaction: discord.Interaction):
-        if interaction.user != self.interaction_user:
-            await interaction.response.send_message("No puedes usar este menú.", ephemeral=True)
-            return
+    async def on_timeout(self):
+        # remove buttons on timeout
+        message = await self.interaction.original_response()
+        await message.edit(view=None)
 
-        self.current_page = (self.current_page - 1) % self.total_pages
-        await self.update_message(interaction)
-
-    async def go_next(self, interaction: discord.Interaction):
-        if interaction.user != self.interaction_user:
-            await interaction.response.send_message("No puedes usar este menú.", ephemeral=True)
-            return
-
-        self.current_page = (self.current_page + 1) % self.total_pages
-        await self.update_message(interaction)
-
+    @staticmethod
+    def compute_total_pages(total_results: int, results_per_page: int) -> int:
+        return ((total_results - 1) // results_per_page) + 1
 
 class Titulos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.database = None
-        self.checker = None
+        self.database: InteractWithDatabase = None
+        self.checker: CheckGuild = None
 
-    @app_commands.command(name="titulos", description="Muestra los títulos desbloqueados de un usuario")
+    @app_commands.command(name="titulos", description="Muestra los titulos desbloqueados de un usuario")
     @app_commands.describe(usuario="Usuario del que ver los roles (opcional)")
     async def unlocked_roles_command(self, interaction: discord.Interaction, usuario: discord.Member = None):
         self.database = self.bot.get_cog("InteractWithDatabase") if self.database is None else self.database
         self.checker = self.bot.get_cog("CheckGuild") if self.checker is None else self.checker
 
-        if not await self.checker.check_guild(interaction=interaction):
+        if await self.checker.check_guild(interaction=interaction) == False:
             return
+        
+        # Make the interacter user as default
+        if usuario is None:
+            usuario = interaction.user
+        
+        user_unlocks = await self.database.get_user_unlocks(interaction.user.id)
+        user_unlocks.sort(key=lambda x: float(x['probability']), reverse=True)
 
-        usuario = usuario or interaction.user
+        # Get the colors from database
+        user_data = await self.database.get_user_data(interaction.user.id)
+        user_aspect = user_data['aspect']
+        aspects = await self.database.get_aspects()
+        aspect_data = next((aspect for aspect in aspects if aspect['name'] == user_aspect), None)
+        color = discord.Color(int(aspect_data.get('color', "#000000")[1:], 16))
 
+        embed = discord.Embed(
+            title="Titulos obtenidos",
+            color=color
+        )
         try:
-            user_history = await self.database.get_user_history(usuario.id)
-        except Exception as e:
-            await interaction.response.send_message("❌ No se pudo obtener el historial del usuario.", ephemeral=True)
-            print(f"Error al obtener historial: {e}")
+            avatar_url = usuario.avatar.url
+        except AttributeError:
+            avatar_url = 'assets/images/defaultAvatar.png'
+        embed.set_thumbnail(url=avatar_url)
+        if not user_unlocks:
+            embed.add_field(
+                name="No tienes titulos obtenidos",
+                value="Todavía no has obtenido ni un solo titulo. Para obtenerlos, realiza tiradas con `/roll`",
+                inline=False
+            )
+            await interaction.response.send_message(embed=embed)
             return
+        
+        async def get_page(page: int):
+            offset = (page - 1) * 10
+            current_page_unlocks = user_unlocks[offset:offset + 10]
 
-        if not user_history:
-            await interaction.response.send_message("❌ Este usuario no tiene recompensas registradas.", ephemeral=True)
-            return
+            embed = discord.Embed(
+                title="Títulos obtenidos",
+                color=color,
+                description=""
+            )
 
-        # Filtrar solo roles y expandir info
-        role_unlocks = []
-        for entry in user_history:
-            reward = entry.get("reward")
-            if reward and reward.get("type") == "Role":
-                role_unlocks.append({
-                    "name": reward.get("name"),
-                    "probability": reward.get("probability", 0),
-                    "created": entry.get("created", 0)
-                })
+            for unlock in current_page_unlocks:
+                embed.description += f"{unlock['name']} - `{unlock['probability']}%`\n"
 
-        if not role_unlocks:
-            await interaction.response.send_message("⚠️ Este usuario no ha desbloqueado roles.", ephemeral=True)
-            return
+            total_pages = Pagination.compute_total_pages(len(user_unlocks), 10)
+            embed.set_footer(text=f"Página {page} de {total_pages}")
+            embed.set_thumbnail(url=avatar_url)
 
-        paginator = RolePaginator(role_unlocks, interaction.user)
-        await interaction.response.send_message(embed=paginator.get_embed(), view=paginator)
+            return embed, total_pages
+        pagination = Pagination(interaction, get_page)
+        await pagination.navegate()
 
 async def setup(bot):
     await bot.add_cog(Titulos(bot))

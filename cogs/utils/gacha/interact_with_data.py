@@ -11,7 +11,7 @@ from discord.ext import commands
 class InteractWithDatabase(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.guild = self.bot.config.get("guild", {})["hispanic"]
+        self.__guild = self.bot.config.get("guild", {})["hispanic"]
         self.__client = PocketBase(self.bot.config["database"]["url"])
         self.__users = 'USERS'
         self.__aspects = 'ASPECTS'
@@ -679,16 +679,17 @@ class InteractWithDatabase(commands.Cog):
             print(F"Ha ocurrido un error: {e}")
             raise
 
-
     async def get_user_unlocks(self, user_id: int):
         try:
             # Get the data of the user from database
-            user_data = self.__client.collection(self.__users).get_one(id=str(user_id), query_params={'fields': 'unlocks'})
-            
-            # Parse the level and experience
-            user_level_stats = {'level': user_data.level, 'experience': user_data.experience}
+            user_data = self.__client.collection(self.__users).get_one(id=str(user_id), query_params={"expand": "unlocks"})
 
-            return user_level_stats
+            user_unlocks = [{
+                'name': getattr(unlock, "name", None),
+                'probability': getattr(unlock, "probability", None),
+            } for unlock in user_data.expand.get("unlocks", [])]
+
+            return user_unlocks
         except ClientResponseError as e:
             if e.status != 404:
                 print(f"Ocurrió un error con la base de datos:\n{e}")
