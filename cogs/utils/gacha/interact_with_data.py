@@ -508,10 +508,13 @@ class InteractWithDatabase(commands.Cog):
     async def get_ranking(self) -> list:
         try:
             # Get the ID and level of the user from database
-            users = self.__client.collection(self.__users).get_full_list(query_params={'fields': 'id, level, experience'})
+            users = self.__client.collection(self.__users).get_full_list(query_params={'fields': 'username, level, experience'})
 
             # Parse ID as int and order by level
-            ranking = sorted([{'id': int(user.id), 'level': user.level, 'experience': user.experience} for user in users], key=lambda x: (x['level'], x['experience']))
+            ranking = sorted(
+                [{'username': user.username, 'level': user.level, 'experience': user.experience} for user in users],
+                key=lambda x: (x['level'], x['experience']), reverse=True
+            )
 
             return ranking
         except ClientResponseError as e:

@@ -132,7 +132,6 @@ class Recompensas(commands.Cog):
         await interaction.response.defer()
         
         await interaction.response.send_message("Still working")
-        
 
 async def setup(bot):
     await bot.add_cog(Recompensas(bot))
