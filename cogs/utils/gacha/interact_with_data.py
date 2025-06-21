@@ -400,7 +400,7 @@ class InteractWithDatabase(commands.Cog):
             return False
 
     async def get_rewards(self) -> list:
-        '''Returns multiple rows from table REWARDS''' # TODO
+        '''Returns multiple rows from table REWARDS'''
         try:
             # Get the name and the cost from the databaese, filter by its category and if it is a shop item
             rewards = self.__client.collection(self.__rewards).get_full_list(query_params={"expand": 'item'})
